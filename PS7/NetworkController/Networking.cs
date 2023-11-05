@@ -234,6 +234,7 @@ public static class Networking
         int numBytes = state.TheSocket.EndReceive(ar);
         string data = Encoding.UTF8.GetString(state.buffer, 0, numBytes);
         state.data.Append(data);
+        state.OnNetworkAction(state);
         state.TheSocket.BeginReceive(state.buffer, 0,
         state.buffer.Length, SocketFlags.None, ReceiveCallback, state);
     }
