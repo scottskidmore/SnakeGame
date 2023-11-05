@@ -112,7 +112,10 @@ public static class Networking
             // Didn't find any IPV4 addresses
             if (!foundIPV4)
             {
-                // TODO: Indicate an error to the user, as specified in the documentation
+                SocketState s = new SocketState(toCall, "Cannot find IPV4 Address");
+                
+                toCall.Invoke(s);
+                
             }
         }
         catch (Exception)
@@ -124,7 +127,9 @@ public static class Networking
             }
             catch (Exception)
             {
-                // TODO: Indicate an error to the user, as specified in the documentation
+                SocketState s = new SocketState(toCall, "Invalid IP Address");
+
+                toCall.Invoke(s);
             }
         }
 
@@ -136,7 +141,21 @@ public static class Networking
         // game like ours will be 
         socket.NoDelay = true;
 
-        // TODO: Finish the remainder of the connection process as specified.
+        
+        SocketState state = new SocketState(toCall,socket);
+
+        // Connect
+        try
+        {
+            state.TheSocket.BeginConnect(ipAddress, port, ConnectedCallback, state);
+        }
+        catch (Exception e)
+        {
+            state = new SocketState(toCall, e.Message);
+
+            toCall.Invoke(state);
+        }
+
     }
 
     /// <summary>
@@ -154,7 +173,18 @@ public static class Networking
     /// <param name="ar">The object asynchronously passed via BeginConnect</param>
     private static void ConnectedCallback(IAsyncResult ar)
     {
-        throw new NotImplementedException();
+        SocketState state = (SocketState)ar.AsyncState!;
+        try 
+        {
+            state.TheSocket.EndConnect(ar);
+        }
+        catch(Exception e) 
+        {
+            Action<SocketState> toCall = (Action<SocketState>)ar.AsyncState!;
+            state = new SocketState(toCall, e.Message);
+
+            toCall.Invoke(state);
+        }
     }
 
 
