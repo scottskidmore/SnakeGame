@@ -50,7 +50,7 @@ public static class Networking
     /// 1) a delegate so the user can take action (a SocketState Action), and 2) the TcpListener</param>
     private static void AcceptNewClient(IAsyncResult ar)
     {
-        Tuple<Action<SocketState>, TcpListener> items = (Tuple<Action<SocketState>, TcpListener>)ar;
+        Tuple<Action<SocketState>, TcpListener> items = (Tuple<Action<SocketState>, TcpListener>)ar.AsyncState!;
         Socket newClient =items.Item2.EndAcceptSocket(ar);
         SocketState state = new SocketState(items.Item1,newClient);
         state.OnNetworkAction(state);
@@ -185,6 +185,7 @@ public static class Networking
 
             toCall.Invoke(state);
         }
+        state.OnNetworkAction(state);
     }
 
 
@@ -255,7 +256,7 @@ public static class Networking
         SocketState state = new SocketState((SocketState obj) => Task.Delay(0), socket);
         byte[] messageBytes = Encoding.UTF8.GetBytes(data);
         socket.BeginSend(messageBytes, 0,
-        state.buffer.Length, SocketFlags.None, SendCallback, state);
+        messageBytes.Length, SocketFlags.None, SendCallback, state);
         return true;
     }
 
