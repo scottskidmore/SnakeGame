@@ -126,9 +126,9 @@ public static class Networking
             {
                 ipAddress = IPAddress.Parse(hostName);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                SocketState s = new SocketState(toCall, "Invalid IP Address");
+                SocketState s = new SocketState(toCall, e.Message);
 
                 s.OnNetworkAction(s);
             }
@@ -144,13 +144,14 @@ public static class Networking
 
         
         SocketState state = new SocketState(toCall,socket);
-        //set a timeout 
-        state.TheSocket.SendTimeout = 3000;
+         
+       
         // Connect
         try
         {
             Console.WriteLine(ipAddress);
             IAsyncResult result = state.TheSocket.BeginConnect(ipAddress, port, ConnectedCallback, state);
+            //set a timeout
             bool success = result.AsyncWaitHandle.WaitOne(3000, true);
             if (!success)
             {
