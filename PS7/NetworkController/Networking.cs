@@ -154,7 +154,7 @@ public static class Networking
         {
             state = new SocketState(toCall, e.Message);
 
-            toCall.Invoke(state);
+            state.OnNetworkAction(state);
         }
 
     }
@@ -181,10 +181,10 @@ public static class Networking
         }
         catch(Exception e) 
         {
-            Action<SocketState> toCall = (Action<SocketState>)ar.AsyncState!;
-            state = new SocketState(toCall, e.Message);
+            state.ErrorOccurred = true;
+            state.ErrorMessage = e.Message;
 
-            toCall.Invoke(state);
+            
         }
         state.OnNetworkAction(state);
     }
