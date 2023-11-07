@@ -113,9 +113,10 @@ public static class Networking
             if (!foundIPV4)
             {
                 SocketState s = new SocketState(toCall, "Cannot find IPV4 Address");
-                
-                toCall.Invoke(s);
-                
+
+                s.OnNetworkAction(s);
+
+
             }
         }
         catch (Exception)
@@ -129,7 +130,7 @@ public static class Networking
             {
                 SocketState s = new SocketState(toCall, "Invalid IP Address");
 
-                toCall.Invoke(s);
+                s.OnNetworkAction(s);
             }
         }
 
@@ -143,12 +144,19 @@ public static class Networking
 
         
         SocketState state = new SocketState(toCall,socket);
-
+        //set a timeout 
+        state.TheSocket.SendTimeout = 3000;
         // Connect
         try
         {
             Console.WriteLine(ipAddress);
-            state.TheSocket.BeginConnect(ipAddress, port, ConnectedCallback, state);
+            IAsyncResult result = state.TheSocket.BeginConnect(ipAddress, port, ConnectedCallback, state);
+            bool success = result.AsyncWaitHandle.WaitOne(3000, true);
+            if (!success)
+            {
+                socket.Close();
+                throw new ApplicationException("Failed to connect server in under 3 seconds.");
+            }
         }
         catch (Exception e)
         {
@@ -183,7 +191,7 @@ public static class Networking
         {
             state.ErrorOccurred = true;
             state.ErrorMessage = e.Message;
-
+           
             
         }
         state.OnNetworkAction(state);
