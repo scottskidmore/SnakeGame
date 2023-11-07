@@ -24,9 +24,19 @@ public static class Networking
 
         // 2. start the listener
         listener.Start();
-       
+
         // 3. begin accepting a client (starts an event loop)
-        listener.BeginAcceptSocket(AcceptNewClient, new Tuple<Action<SocketState>, TcpListener>(toCall, listener));
+        try
+        {
+            listener.BeginAcceptSocket(AcceptNewClient, new Tuple<Action<SocketState>, TcpListener>(toCall, listener));
+        }
+        catch (Exception e)
+        {
+            SocketState s = new SocketState(toCall, e.Message);
+
+            s.OnNetworkAction(s);
+            return listener;
+        }
         return listener;
     }
 
@@ -51,9 +61,20 @@ public static class Networking
     private static void AcceptNewClient(IAsyncResult ar)
     {
         Tuple<Action<SocketState>, TcpListener> items = (Tuple<Action<SocketState>, TcpListener>)ar.AsyncState!;
-        Socket newClient =items.Item2.EndAcceptSocket(ar);
-        SocketState state = new SocketState(items.Item1,newClient);
-        state.OnNetworkAction(state);
+        try
+        {
+            Socket newClient = items.Item2.EndAcceptSocket(ar);
+            SocketState state = new SocketState(items.Item1, newClient);
+            state.OnNetworkAction(state);
+        }
+        catch (Exception e)
+        {
+            SocketState s = new SocketState(items.Item1, e.Message);
+
+            s.OnNetworkAction(s);
+            return;
+        }
+       
 
   
         // continues an accept loop
@@ -131,6 +152,8 @@ public static class Networking
                 SocketState s = new SocketState(toCall, e.Message);
 
                 s.OnNetworkAction(s);
+                return;
+
             }
         }
 
@@ -164,6 +187,7 @@ public static class Networking
             state = new SocketState(toCall, e.Message);
 
             state.OnNetworkAction(state);
+            return;
         }
 
     }
@@ -216,8 +240,20 @@ public static class Networking
     /// <param name="state">The SocketState to begin receiving</param>
     public static void GetData(SocketState state)
     {
-        state.TheSocket.BeginReceive(state.buffer, 0, state.buffer.Length, SocketFlags.None,
-          ReceiveCallback, state);
+        try
+        {
+            state.TheSocket.BeginReceive(state.buffer, 0, state.buffer.Length, SocketFlags.None,
+              ReceiveCallback, state);
+        }
+        catch (Exception e)
+        {
+            state.ErrorOccurred = true;
+            state.ErrorMessage = e.Message;
+            state.OnNetworkAction(state);
+            return;
+
+        }
+        
     }
 
     /// <summary>
@@ -240,12 +276,33 @@ public static class Networking
     private static void ReceiveCallback(IAsyncResult ar)
     {
         SocketState state = (SocketState)ar.AsyncState!;
-        int numBytes = state.TheSocket.EndReceive(ar);
-        string data = Encoding.UTF8.GetString(state.buffer, 0, numBytes);
-        state.data.Append(data);
+        try
+        {
+            int numBytes = state.TheSocket.EndReceive(ar);
+            string data = Encoding.UTF8.GetString(state.buffer, 0, numBytes);
+            state.data.Append(data);
+        }
+        catch (Exception e)
+        {
+            state.ErrorOccurred = true;
+            state.ErrorMessage = e.Message;
+            state.OnNetworkAction(state);
+            return;
+        }
+       
         state.OnNetworkAction(state);
-        state.TheSocket.BeginReceive(state.buffer, 0,
-        state.buffer.Length, SocketFlags.None, ReceiveCallback, state);
+        try
+        {
+            state.TheSocket.BeginReceive(state.buffer, 0,
+            state.buffer.Length, SocketFlags.None, ReceiveCallback, state);
+        }
+        catch (Exception e)
+        {
+            state.ErrorOccurred = true;
+            state.ErrorMessage = e.Message;
+            state.OnNetworkAction(state);
+
+        }
     }
 
     /// <summary>
@@ -266,7 +323,19 @@ public static class Networking
         }
         SocketState state = new SocketState((SocketState obj) => Task.Delay(0), socket);
         byte[] messageBytes = Encoding.UTF8.GetBytes(data);
-        socket.BeginSend(messageBytes, 0,messageBytes.Length, SocketFlags.None, SendCallback, state);
+        try
+        {
+            socket.BeginSend(messageBytes, 0, messageBytes.Length, SocketFlags.None, SendCallback, state);
+        }
+        catch (Exception e)
+        {
+            state.ErrorOccurred = true;
+            state.ErrorMessage = e.Message;
+            state.OnNetworkAction(state);
+            socket.Close();
+            return false;
+
+        }
         return true;
     }
 
@@ -284,8 +353,18 @@ public static class Networking
     private static void SendCallback(IAsyncResult ar)
     {
         SocketState state = (SocketState)ar.AsyncState!;
-        state.TheSocket.EndSend(ar);
-        state.OnNetworkAction(state);
+        try
+        {
+            state.TheSocket.EndSend(ar);
+
+        }
+        catch (Exception e)
+        {
+            state.ErrorOccurred = true;
+            state.ErrorMessage = e.Message;
+            state.OnNetworkAction(state);
+
+        }
     }
 
 
@@ -308,8 +387,19 @@ public static class Networking
         }
         SocketState state = new SocketState((SocketState obj) => Task.Delay(0), socket);
         byte[] messageBytes = Encoding.UTF8.GetBytes(data);
-        socket.BeginSend(messageBytes, 0,
-        state.buffer.Length, SocketFlags.None, SendAndCloseCallback, state);
+        try
+        {
+            socket.BeginSend(messageBytes, 0, messageBytes.Length, SocketFlags.None, SendAndCloseCallback, state);
+        }
+        catch (Exception e)
+        {
+            state.ErrorOccurred = true;
+            state.ErrorMessage = e.Message;
+            state.OnNetworkAction(state);
+            socket.Close();
+            return false;
+
+        }
         return true;
     }
 
@@ -329,7 +419,17 @@ public static class Networking
     private static void SendAndCloseCallback(IAsyncResult ar)
     {
         SocketState state = (SocketState)ar.AsyncState!;
-        state.TheSocket.EndSend(ar);
+        try
+        {
+            state.TheSocket.EndSend(ar);
+        }
+        catch (Exception e)
+        {
+            state.ErrorOccurred = true;
+            state.ErrorMessage = e.Message;
+            state.OnNetworkAction(state);
+
+        }
         state.TheSocket.Close();
     }
 }
