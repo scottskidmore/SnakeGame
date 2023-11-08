@@ -172,7 +172,6 @@ public static class Networking
         // Connect
         try
         {
-            Console.WriteLine(ipAddress);
             IAsyncResult result = state.TheSocket.BeginConnect(ipAddress, port, ConnectedCallback, state);
             //set a timeout
             bool success = result.AsyncWaitHandle.WaitOne(3000, true);
@@ -281,6 +280,7 @@ public static class Networking
             int numBytes = state.TheSocket.EndReceive(ar);
             string data = Encoding.UTF8.GetString(state.buffer, 0, numBytes);
             state.data.Append(data);
+            state.OnNetworkAction(state);
         }
         catch (Exception e)
         {
@@ -289,20 +289,8 @@ public static class Networking
             state.OnNetworkAction(state);
             return;
         }
-       
-        state.OnNetworkAction(state);
-        try
-        {
-            state.TheSocket.BeginReceive(state.buffer, 0,
-            state.buffer.Length, SocketFlags.None, ReceiveCallback, state);
-        }
-        catch (Exception e)
-        {
-            state.ErrorOccurred = true;
-            state.ErrorMessage = e.Message;
-            state.OnNetworkAction(state);
+      
 
-        }
     }
 
     /// <summary>

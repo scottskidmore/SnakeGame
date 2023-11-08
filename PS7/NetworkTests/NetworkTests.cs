@@ -106,7 +106,6 @@ public class NetworkTests
         // Try to connect without setting up a server first.
         Networking.ConnectToServer(saveClientState, "localhost", 2112);
         NetworkTestHelper.WaitForOrTimeout(() => isCalled, NetworkTestHelper.timeout);
-
         Assert.IsTrue(isCalled);
         Assert.IsTrue(testLocalSocketState?.ErrorOccurred);
     }
