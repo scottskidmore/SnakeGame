@@ -1,5 +1,6 @@
 // Author: Daniel Kopta, May 2019, Travis Martin 2023
 // Unit testing examples for CS 3500 networking library (part of final project)
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net.Sockets;
 using System.Text;
@@ -463,6 +464,45 @@ public class NetworkTests
         Assert.AreEqual(message.ToString(), testLocalSocketState.GetData());
     }
 
+    [TestMethod]
+    public void TestServerShutDown()
+    {
+ 
+
+        void saveServerState(SocketState x)
+        {
+            testLocalSocketState = x;
+        }
+
+      
+
+        testListener = Networking.StartServer(saveServerState, 2112);
+        Networking.StopServer(testListener);
+        Assert.IsTrue(!testListener.Server.Connected);
+
+        
+    }
+    [TestMethod]
+    public void TestInvalidAddress()
+    {
+        bool isCalled = false;
+
+        void saveServerState(SocketState x)
+        {
+            isCalled = true;
+            testLocalSocketState = x;
+        }
+
+
+
+        testListener = Networking.StartServer(saveServerState, 2112);
+        Networking.ConnectToServer(saveServerState, "I", 0);
+        NetworkTestHelper.WaitForOrTimeout(() => isCalled, NetworkTestHelper.timeout);
+        Assert.IsTrue(isCalled);
+        Assert.IsTrue(testLocalSocketState?.ErrorOccurred);
+
+
+    }
     /*** End Send/Receive Tests ***/
 
 
