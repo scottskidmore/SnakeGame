@@ -279,6 +279,10 @@ public static class Networking
         {
             int numBytes = state.TheSocket.EndReceive(ar);
             string data = Encoding.UTF8.GetString(state.buffer, 0, numBytes);
+            if (data == "")
+            {
+                throw new Exception("Server was terminated");
+            }
             state.data.Append(data);
             state.OnNetworkAction(state);
         }
