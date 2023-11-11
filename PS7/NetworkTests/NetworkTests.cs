@@ -506,6 +506,4 @@ public class NetworkTests
     /*** End Send/Receive Tests ***/
 
 
-    //TODO: Add more of your own tests here
-
 }
