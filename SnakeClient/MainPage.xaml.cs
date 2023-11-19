@@ -1,6 +1,7 @@
 ﻿
 
 using GameController;
+using World;
 
 namespace SnakeGame;
 
