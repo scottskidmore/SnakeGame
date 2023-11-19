@@ -1,4 +1,8 @@
-﻿namespace SnakeGame;
+﻿
+
+using GameController;
+
+namespace SnakeGame;
 
 public partial class MainPage : ContentPage
 {
@@ -65,8 +69,13 @@ public partial class MainPage : ContentPage
             DisplayAlert("Error", "Name must be less than 16 characters", "OK");
             return;
         }
-        DisplayAlert("Delete this", "Code to start the controller's connecting process goes here", "OK");
-
+        // Disable the controls and try to connect
+        connectButton.IsEnabled = false;
+        serverText.IsEnabled = false;
+        Controller controller = new Controller();
+        //Send info to game controller
+        controller.OnConnectClicked(serverText.Text, nameText.Text);
+        //what does this do?
         keyboardHack.Focus();
     }
 
