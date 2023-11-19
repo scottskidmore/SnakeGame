@@ -1,5 +1,8 @@
 ﻿using System;
-
+using System.Net.Http.Json;
+using System.Net.Sockets;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace GameController
 {
@@ -8,6 +11,7 @@ namespace GameController
         //name of player
         private string name;
         private SocketState theServer;
+        public World.World world;
 
         public Controller()
 		{
@@ -25,7 +29,6 @@ namespace GameController
                 return;
             }
             this.name = name;
-
             Networking.ConnectToServer(OnConnect, serverAddress, 11000);
         }
 
@@ -44,20 +47,47 @@ namespace GameController
                 return;
             }
             theServer = state;
+            World.World world = new World.World();
             //send player name
             string message = name + "\n";
             Networking.Send(theServer.TheSocket, message);
 
-           
+
 
 
 
             // Start an event loop to receive messages from the server
-           // state.OnNetworkAction = ReceiveMessage;
+            // state.OnNetworkAction = ReceiveMessage;
+            state.OnNetworkAction = ProcessData;
             Networking.GetData(state);
         }
 
-
+        private void ProcessData(SocketState state)
+        {
+            string data=state.GetData();
+            string[] list=data.Split( "\n");
+            foreach (string s in list)
+            {
+                if (s.StartsWith("{")){
+                    JsonDocument doc = JsonDocument.Parse(s);
+                    if (doc.RootElement.TryGetProperty("wall", out _))
+                    {
+                        World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
+                        world.Walls.Append(wall);
+                    }
+                    if (doc.RootElement.TryGetProperty("power", out _))
+                    {
+                        World.PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
+                        world.PowerUps.Add(power);
+                    }
+                    if (doc.RootElement.TryGetProperty("snake", out _))
+                    {
+                        World.Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
+                        world.Snakes.Add(snake);
+                    }
+                }
+            }
+        }
         /// <summary>
         /// This is the event handler when the enter key is pressed in the messageToSend box
         /// </summary>

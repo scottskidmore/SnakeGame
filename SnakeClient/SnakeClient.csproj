@@ -63,6 +63,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\GameController\GameController.csproj" />
+	  <ProjectReference Include="..\World\World.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
