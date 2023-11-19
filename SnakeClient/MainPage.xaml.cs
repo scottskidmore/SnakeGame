@@ -7,10 +7,30 @@ namespace SnakeGame;
 
 public partial class MainPage : ContentPage
 {
+    Controller gameController = new();
     public MainPage()
     {
         InitializeComponent();
+        gameController.Error += ShowError;
         graphicsView.Invalidate();
+    }
+
+    /// <summary>
+    /// Handler for the controller's Error event
+    /// </summary>
+    /// <param name="err"></param>
+    private void ShowError(string err)
+    {
+        // Show the error
+        Dispatcher.Dispatch(() => DisplayAlert("Error", err, "OK"));
+
+        // Then re-enable the controls so the user can reconnect
+        Dispatcher.Dispatch(
+          () =>
+          {
+              connectButton.IsEnabled = true;
+              serverText.IsEnabled = true;
+          });
     }
 
     void OnTapped(object sender, EventArgs args)
@@ -73,9 +93,9 @@ public partial class MainPage : ContentPage
         // Disable the controls and try to connect
         connectButton.IsEnabled = false;
         serverText.IsEnabled = false;
-        Controller controller = new Controller();
+        
         //Send info to game controller
-        controller.OnConnectClicked(serverText.Text, nameText.Text);
+        gameController.Connect(serverText.Text, nameText.Text);
         //what does this do?
         keyboardHack.Focus();
     }
