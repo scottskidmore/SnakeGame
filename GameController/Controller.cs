@@ -13,23 +13,27 @@ namespace GameController
         private SocketState theServer;
         public World.World world;
 
+        //Events for view to subscribe to
+        public delegate void ErrorHandler(string err);
+        public event ErrorHandler? Error;
+
+        public delegate void GameUpdateHandler();
+        public event GameUpdateHandler NewUpdate;
+
         public Controller()
-		{
-		}
+        {
+            world = new();
+        }
+
         /// <summary>
         /// Connect button event handler
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void OnConnectClicked(string serverAddress, string name)
+        public void Connect(string addr , string name)
         {
-            if (serverAddress == "")
-            {
-                
-                return;
-            }
             this.name = name;
-            Networking.ConnectToServer(OnConnect, serverAddress, 11000);
+            Networking.ConnectToServer(OnConnect, addr, 11000);
         }
 
 
@@ -42,8 +46,8 @@ namespace GameController
         {
             if (state.ErrorOccurred)
             {
-                // TODO: Left as an exercise, allow the user to try to reconnect
-              //  Dispatcher.Dispatch(() => DisplayAlert("Error", "Error connecting to server. Please restart the client.", "OK"));
+                // inform the view
+                Error?.Invoke(state.ErrorMessage);
                 return;
             }
             theServer = state;
@@ -57,23 +61,35 @@ namespace GameController
 
 
             // Start an event loop to receive messages from the server
-            // state.OnNetworkAction = ReceiveMessage;
-            state.OnNetworkAction = ProcessData;
+            state.OnNetworkAction = ReceiveData;
             Networking.GetData(state);
         }
 
-        private void ProcessData(SocketState state)
+
+        /// <summary>
+        /// Method to be invoked by the networking library when 
+        /// data is available
+        /// </summary>
+        /// <param name="state"></param>
+        private void ReceiveData(SocketState state)
         {
-            string data=state.GetData();
-            string[] list=data.Split( "\n");
+            if (state.ErrorOccurred)
+            {
+                // inform the view
+                Error?.Invoke("Lost connection to server");
+                return;
+            }
+            string data = state.GetData();
+            string[] list = data.Split("\n");
             foreach (string s in list)
             {
-                if (s.StartsWith("{")){
+                if (s.StartsWith("{"))
+                {
                     JsonDocument doc = JsonDocument.Parse(s);
                     if (doc.RootElement.TryGetProperty("wall", out _))
                     {
                         World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
-                        world.Walls.Append(wall);
+                        world.Walls.Add(wall);
                     }
                     if (doc.RootElement.TryGetProperty("power", out _))
                     {
@@ -87,20 +103,64 @@ namespace GameController
                     }
                 }
             }
+            //tell view to update world
+            NewUpdate?.Invoke();
+            // Continue the event loop
+            // state.OnNetworkAction has not been changed, 
+            // so this same method (ReceiveMessage) 
+            // will be invoked when more data arrives
+            Networking.GetData(state);
+        }
+
+
+        private void ProcessData(SocketState state)
+        {
+            string data=state.GetData();
+            string[] list=data.Split( "\n");
+            foreach (string s in list)
+            {
+                if (s.StartsWith("{")){
+                    JsonDocument doc = JsonDocument.Parse(s);
+                    if (doc.RootElement.TryGetProperty("wall", out _))
+                    {
+                        World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
+                        world.Walls.Add(wall);
+                    }
+                    if (doc.RootElement.TryGetProperty("power", out _))
+                    {
+                        World.PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
+                        world.PowerUps.Add(power);
+                    }
+                    if (doc.RootElement.TryGetProperty("snake", out _))
+                    {
+                        World.Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
+                        world.Snakes.Add(snake);
+                    }
+                }
+            }
+
         }
         /// <summary>
-        /// This is the event handler when the enter key is pressed in the messageToSend box
+        /// Closes the connection with the server
         /// </summary>
-        /// <param name="sender">The Form control that fired the event</param>
-        /// <param name="e">The key event arguments</param>
-        private void OnMessageEnter(object sender)
+        public void Close()
         {
-            // Append a newline, since that is our protocols terminating character for a message.
-          //  string message = messageToSendBox.Text + "\n";
-            // Reset the textbox
-          //  messageToSendBox.Text = "";
-            // Send the message to the server
-           // Networking.Send(theServer.TheSocket, message);
+            theServer?.TheSocket.Close();
+        }
+
+        /// <summary>
+        /// Send a message to the server
+        /// </summary>
+        /// <param name="message"></param>
+        public void MessageEntered(string message)
+        {
+            if (theServer is not null)
+                Networking.Send(theServer.TheSocket, message + "\n");
+        }
+
+        public World.World GetWorld()
+        {
+            return world;
         }
 
 

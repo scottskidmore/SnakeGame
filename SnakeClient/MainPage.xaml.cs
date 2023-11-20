@@ -1,17 +1,43 @@
 ﻿
 
 using GameController;
+using System.Text.Json;
 using World;
 
 namespace SnakeGame;
 
 public partial class MainPage : ContentPage
 {
+    Controller gameController = new();
+    private string moving;
+    private bool canMove = false;
     public MainPage()
     {
         InitializeComponent();
+        gameController.Error += ShowError;
+        gameController.NewUpdate+=OnFrame;
+        worldPanel.SetWorld(gameController.GetWorld());
         graphicsView.Invalidate();
     }
+
+    /// <summary>
+    /// Handler for the controller's Error event
+    /// </summary>
+    /// <param name="err"></param>
+    private void ShowError(string err)
+    {
+        // Show the error
+        Dispatcher.Dispatch(() => DisplayAlert("Error", err, "OK"));
+
+        // Then re-enable the controls so the user can reconnect
+        Dispatcher.Dispatch(
+          () =>
+          {
+              connectButton.IsEnabled = true;
+              serverText.IsEnabled = true;
+          });
+    }
+
 
     void OnTapped(object sender, EventArgs args)
     {
@@ -22,23 +48,48 @@ public partial class MainPage : ContentPage
     {
         Entry entry = (Entry)sender;
         String text = entry.Text.ToLower();
+
+        if (canMove == false) 
+        {
+            entry.Text = "";
+            return;
+
+        }
+
+        
         if (text == "w")
         {
             // Move up
+            moving = "up";
         }
         else if (text == "a")
         {
             // Move left
+            moving = "left";
         }
         else if (text == "s")
         {
             // Move down
+            moving = "down";
         }
         else if (text == "d")
         {
             // Move right
+            moving = "right";
         }
+        //if a moving command was entered
+        if (moving != null)
+        {
+            string jsonString = JsonSerializer.Serialize(moving);
+            gameController.MessageEntered(jsonString);
+            //reset moving text
+            moving = null;
+            //disable entry until next frame
+            canMove = false;
+        }
+        //reset entry text
         entry.Text = "";
+        
     }
 
     private void NetworkErrorHandler()
@@ -73,9 +124,9 @@ public partial class MainPage : ContentPage
         // Disable the controls and try to connect
         connectButton.IsEnabled = false;
         serverText.IsEnabled = false;
-        Controller controller = new Controller();
+        
         //Send info to game controller
-        controller.OnConnectClicked(serverText.Text, nameText.Text);
+        gameController.Connect(serverText.Text, nameText.Text);
         //what does this do?
         keyboardHack.Focus();
     }
@@ -86,6 +137,8 @@ public partial class MainPage : ContentPage
     public void OnFrame()
     {
         Dispatcher.Dispatch(() => graphicsView.Invalidate());
+        //reenable controls
+        canMove = true;
     }
 
     private void ControlsButton_Clicked(object sender, EventArgs e)
