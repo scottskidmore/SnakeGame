@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using World;
 
 namespace GameController
@@ -57,14 +58,12 @@ namespace GameController
             //send player name
             string message = name + "\n";
             Networking.Send(theServer.TheSocket, message);
-
-
-
-
-
             // Start an event loop to receive messages from the server
             state.OnNetworkAction = ReceiveData;
             Networking.GetData(state);
+
+
+
         }
 
 
@@ -82,25 +81,35 @@ namespace GameController
                 return;
             }
             string data = state.GetData();
-            string[] list = data.Split("\n");
+            string[] list = Regex.Split(data, @"(?<=[\n])");
             foreach (string s in list)
             {
                 if (s.StartsWith("{"))
                 {
+                    // Ignore empty strings added by the regex splitter
+                    if (s.Length == 0)
+                        continue;
+                    // The regex splitter will include the last string even if it doesn't end with a '\n',
+                    // So we need to ignore it if this happens. 
+                    if (s[s.Length - 1] != '\n')
+                        break;
+
+                    // Then remove it from the SocketState's growable buffer
+                    state.RemoveData(0, s.Length);
                     JsonDocument doc = JsonDocument.Parse(s);
                     if (doc.RootElement.TryGetProperty("wall", out _))
                     {
-                        World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
+                        Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
                         world.Walls.Add(wall);
                     }
                     if (doc.RootElement.TryGetProperty("power", out _))
                     {
-                        World.PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
+                        PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
                         world.PowerUps.Add(power);
                     }
                     if (doc.RootElement.TryGetProperty("snake", out _))
                     {
-                        World.Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
+                        Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
                         world.Snakes.Add(snake);
                     }
                 }
@@ -115,38 +124,6 @@ namespace GameController
         }
 
 
-        private void ProcessData(SocketState state)
-        {
-            string data=state.GetData();
-            string[] list=data.Split( "\n");
-            foreach (string s in list)
-            {
-                if (s.StartsWith("{")){
-                    JsonDocument doc = JsonDocument.Parse(s);
-                    if (doc.RootElement.TryGetProperty("wall", out _))
-                    {
-                        
-                        World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
-                        if (!world.Walls.Contains(wall))
-                                world.Walls.Add(wall);
-                    }
-                    if (doc.RootElement.TryGetProperty("power", out _))
-                    {
-                        World.PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
-                        if (!world.PowerUps.Contains(power))
-                            world.PowerUps.Add(power);
-                    }
-                    if (doc.RootElement.TryGetProperty("snake", out _))
-                    {
-                        World.Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
-                        if (world.Snakes.Contains(snake))
-                            world.Snakes.Remove(snake);
-                        world.Snakes.Add(snake);
-                    }
-                }
-            }
-
-        }
         /// <summary>
         /// Closes the connection with the server
         /// </summary>
