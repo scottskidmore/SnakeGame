@@ -128,12 +128,12 @@ public class WorldPanel : IDrawable
     {
         if ( !initializedForDrawing )
             InitializeDrawing();
-        float playerX = 0;
-        float playerY = 0;
+        float playerX = 100;
+        float playerY = 100;
 
         canvas.Translate(-playerX + (viewSize / 2), -playerY + (viewSize / 2));
 
-        canvas.DrawImage(background, -1200 / 2, -1200 / 2, 1200, 1200);
+        canvas.DrawImage(background, -2000 / 2, -2000 / 2, 2000, 2000);
         // undo previous transformations from last frame
         canvas.ResetState();
         // center the view on the middle of the world
