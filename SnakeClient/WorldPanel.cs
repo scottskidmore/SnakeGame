@@ -173,7 +173,7 @@ public class WorldPanel : IDrawable
             Vector2D loc2 = s.body[i + 1];
 
 
-            //canvas.FillRectangle();
+           
 
         }
 
@@ -208,6 +208,11 @@ public class WorldPanel : IDrawable
         //}
     }
 
+    private void SnakeSegmentDrawer(object o, ICanvas canvas)
+    {
+        int snakeSegmentLength = o as int;
+        canvas.DrawLine(0, 0, 0, -snakeSegmentLength);
+    }
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
@@ -227,8 +232,23 @@ public class WorldPanel : IDrawable
         // (the image is not visible in the starter code)
         foreach (var p in theWorld.Walls)
             WallDrawer(p, canvas);
-              
-        
+        foreach (Snake s in theWorld.Snakes)
+        {
+            canvas.FillColor = colorChooser(s.snake % 10);
+            for (int i = 0; i < s.body.Count - 1; i++)
+            {
+                // Loop through snake segments, calculate segment length and segment direction
+                double segmentLength = s.body[i].Length()-s.body[i+1].Length();
+                double segmentX = s.body[i].X - s.body[i + 1].X;
+                double segmentY = s.body[i].Y - s.body[i + 1].Y;
+                double segmentDirection = 
+
+            }
+
+            DrawObjectWithTransform(canvas, segmentLength, segmentX, segmentY, segmentDirection, SnakeSegmentDrawer);
+        }
+
+
     }
 
     private Color colorChooser(int i)
