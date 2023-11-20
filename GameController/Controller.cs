@@ -11,11 +11,19 @@ namespace GameController
         //name of player
         private string name;
         private SocketState theServer;
-        public World.World world = new();
+        public World.World world;
 
         //Events for view to subscribe to
         public delegate void ErrorHandler(string err);
         public event ErrorHandler? Error;
+
+        public delegate void GameUpdateHandler();
+        public event GameUpdateHandler NewUpdate;
+
+        public Controller()
+        {
+            world = new();
+        }
 
         /// <summary>
         /// Connect button event handler
@@ -95,7 +103,8 @@ namespace GameController
                     }
                 }
             }
-
+            //tell view to update world
+            NewUpdate?.Invoke();
             // Continue the event loop
             // state.OnNetworkAction has not been changed, 
             // so this same method (ReceiveMessage) 
@@ -148,6 +157,12 @@ namespace GameController
             if (theServer is not null)
                 Networking.Send(theServer.TheSocket, message + "\n");
         }
+
+        public World.World GetWorld()
+        {
+            return world;
+        }
+
 
     }
 }

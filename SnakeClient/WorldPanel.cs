@@ -22,8 +22,8 @@ public class WorldPanel : IDrawable
 {
     private IImage wall;
     private IImage background;
-
-    private World.World theWorld;
+    private int viewSize = 500;
+    private World.World theWorld = new();
 
     public delegate void ObjectDrawer(object o, ICanvas canvas);
 
@@ -44,12 +44,9 @@ public class WorldPanel : IDrawable
         }
     }
 
-    public WorldPanel(World.World w)
+    public WorldPanel()
     {
-        theWorld = w;
-        graphicsView.Drawable = this;
-        //need width and height
-        graphicsView.BackgroundColor = Colors.Black;
+       
         
     }
 
@@ -131,11 +128,16 @@ public class WorldPanel : IDrawable
     {
         if ( !initializedForDrawing )
             InitializeDrawing();
+        float playerX = 0;
+        float playerY = 0;
 
+        canvas.Translate(-playerX + (viewSize / 2), -playerY + (viewSize / 2));
+
+        canvas.DrawImage(background, -1200 / 2, -1200 / 2, 1200, 1200);
         // undo previous transformations from last frame
         canvas.ResetState();
         // center the view on the middle of the world
-        canvas.Translate((float)viewSize / 2, (float)viewSize / 2);
+        
         // example code for how to draw
         // (the image is not visible in the starter code)
         foreach (var p in theWorld.Walls)

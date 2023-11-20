@@ -10,10 +10,13 @@ public partial class MainPage : ContentPage
 {
     Controller gameController = new();
     private string moving;
+    private bool canMove = false;
     public MainPage()
     {
         InitializeComponent();
         gameController.Error += ShowError;
+        gameController.NewUpdate+=OnFrame;
+        worldPanel.SetWorld(gameController.GetWorld());
         graphicsView.Invalidate();
     }
 
@@ -35,6 +38,7 @@ public partial class MainPage : ContentPage
           });
     }
 
+
     void OnTapped(object sender, EventArgs args)
     {
         keyboardHack.Focus();
@@ -44,6 +48,15 @@ public partial class MainPage : ContentPage
     {
         Entry entry = (Entry)sender;
         String text = entry.Text.ToLower();
+
+        if (canMove == false) 
+        {
+            entry.Text = "";
+            return;
+
+        }
+
+        
         if (text == "w")
         {
             // Move up
@@ -72,7 +85,7 @@ public partial class MainPage : ContentPage
             //reset moving text
             moving = null;
             //disable entry until next frame
-            entry.IsEnabled = false;
+            canMove = false;
         }
         //reset entry text
         entry.Text = "";
@@ -124,6 +137,8 @@ public partial class MainPage : ContentPage
     public void OnFrame()
     {
         Dispatcher.Dispatch(() => graphicsView.Invalidate());
+        //reenable controls
+        canMove = true;
     }
 
     private void ControlsButton_Clicked(object sender, EventArgs e)
