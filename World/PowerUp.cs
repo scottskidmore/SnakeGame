@@ -1,18 +1,20 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 using SnakeGame;
 
 namespace World
 {
 	public class PowerUp
 	{
-		int power;
-		Vector2D loc;
-		bool died;
-		public PowerUp(int p,Vector2D l,bool d)
+        public int power { get; set; }
+        public Vector2D loc { get; set; }
+        public bool died { get; set; }
+        [JsonConstructor]
+        public PowerUp(int power,Vector2D loc,bool died)
 		{
-			power = p;
-			loc = l;
-			died = d;
+			this.power = power;
+			this.loc = loc;
+			this.died = died;
 		}
 	}
 }

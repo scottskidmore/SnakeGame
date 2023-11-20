@@ -9,8 +9,8 @@ namespace GameController
 	public class Controller
 	{
         //name of player
-        private string? name;
-        private SocketState? theServer;
+        private string name;
+        private SocketState theServer;
         public World.World world = new();
 
         //Events for view to subscribe to
@@ -71,7 +71,30 @@ namespace GameController
                 Error?.Invoke("Lost connection to server");
                 return;
             }
-            ProcessData(state);
+            string data = state.GetData();
+            string[] list = data.Split("\n");
+            foreach (string s in list)
+            {
+                if (s.StartsWith("{"))
+                {
+                    JsonDocument doc = JsonDocument.Parse(s);
+                    if (doc.RootElement.TryGetProperty("wall", out _))
+                    {
+                        World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
+                        world.Walls.Add(wall);
+                    }
+                    if (doc.RootElement.TryGetProperty("power", out _))
+                    {
+                        World.PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
+                        world.PowerUps.Add(power);
+                    }
+                    if (doc.RootElement.TryGetProperty("snake", out _))
+                    {
+                        World.Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
+                        world.Snakes.Add(snake);
+                    }
+                }
+            }
 
             // Continue the event loop
             // state.OnNetworkAction has not been changed, 
@@ -92,7 +115,7 @@ namespace GameController
                     if (doc.RootElement.TryGetProperty("wall", out _))
                     {
                         World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
-                        world.Walls.Append(wall);
+                        world.Walls.Add(wall);
                     }
                     if (doc.RootElement.TryGetProperty("power", out _))
                     {
@@ -106,6 +129,7 @@ namespace GameController
                     }
                 }
             }
+
         }
         /// <summary>
         /// Closes the connection with the server
