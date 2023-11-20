@@ -1,6 +1,7 @@
 ﻿
 
 using GameController;
+using System.Text.Json;
 using World;
 
 namespace SnakeGame;
@@ -8,6 +9,7 @@ namespace SnakeGame;
 public partial class MainPage : ContentPage
 {
     Controller gameController = new();
+    private string moving;
     public MainPage()
     {
         InitializeComponent();
@@ -45,20 +47,36 @@ public partial class MainPage : ContentPage
         if (text == "w")
         {
             // Move up
+            moving = "up";
         }
         else if (text == "a")
         {
             // Move left
+            moving = "left";
         }
         else if (text == "s")
         {
             // Move down
+            moving = "down";
         }
         else if (text == "d")
         {
             // Move right
+            moving = "right";
         }
+        //if a moving command was entered
+        if (moving != null)
+        {
+            string jsonString = JsonSerializer.Serialize(moving);
+            gameController.MessageEntered(jsonString);
+            //reset moving text
+            moving = null;
+            //disable entry until next frame
+            entry.IsEnabled = false;
+        }
+        //reset entry text
         entry.Text = "";
+        
     }
 
     private void NetworkErrorHandler()

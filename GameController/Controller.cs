@@ -9,8 +9,8 @@ namespace GameController
 	public class Controller
 	{
         //name of player
-        private string name;
-        private SocketState theServer;
+        private string? name;
+        private SocketState? theServer;
         public World.World world = new();
 
         //Events for view to subscribe to
