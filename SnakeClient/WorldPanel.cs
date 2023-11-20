@@ -161,8 +161,21 @@ public class WorldPanel : IDrawable
 
         // choose snake unique color
         canvas.FillColor = colorChooser(s.snake % 10);
-
+        int width = 20;
         
+        //for each body part draw a rectangle
+        for (int i = 0; i<s.body.Count-1; i++)
+        {
+            //first bodypart loc
+            Vector2D loc1 = s.body[i];
+
+            //second bodypart loc
+            Vector2D loc2 = s.body[i + 1];
+
+
+            //canvas.FillRectangle();
+
+        }
 
         //Vector2D diff = p.p1 - p.p2;
         //if wall is horizontal

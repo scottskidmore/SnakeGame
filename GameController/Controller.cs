@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using World;
 
 namespace GameController
@@ -101,17 +102,23 @@ namespace GameController
                     JsonDocument doc = JsonDocument.Parse(s);
                     if (doc.RootElement.TryGetProperty("wall", out _))
                     {
-                        Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
-                        world.Walls.Add(wall);
+
+                        World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
+                        if (!world.Walls.Contains(wall))
+                            world.Walls.Add(wall);
                     }
                     if (doc.RootElement.TryGetProperty("power", out _))
                     {
-                        PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
+                        World.PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
+                        if (world.PowerUps.Contains(power))
+                            world.PowerUps.Remove(power);
                         world.PowerUps.Add(power);
                     }
                     if (doc.RootElement.TryGetProperty("snake", out _))
                     {
-                        Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
+                        World.Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
+                        if (world.Snakes.Contains(snake))
+                            world.Snakes.Remove(snake);
                         world.Snakes.Add(snake);
                     }
                 }
