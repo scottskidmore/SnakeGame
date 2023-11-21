@@ -5,9 +5,16 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+<<<<<<< Updated upstream
 
 using System.Xml.Linq;
 
+=======
+<<<<<<< HEAD
+using System.Xml.Linq;
+=======
+>>>>>>> 031ef4723f20ca60f648d769d3ae452cd2586760
+>>>>>>> Stashed changes
 using World;
 
 namespace GameController
@@ -19,6 +26,9 @@ namespace GameController
         private SocketState theServer;
         public World.World world;
 
+    
+       
+
         //Events for view to subscribe to
         public delegate void ErrorHandler(string err);
         public event ErrorHandler? Error;
@@ -29,6 +39,7 @@ namespace GameController
         public Controller()
         {
             world = new();
+            
         }
 
         /// <summary>
@@ -62,7 +73,7 @@ namespace GameController
             string message = name + "\n";
             Networking.Send(theServer.TheSocket, message);
             // Start an event loop to receive messages from the server
-            state.OnNetworkAction = ReceiveData;
+            state.OnNetworkAction = FirstRecieve;
             Networking.GetData(state);
 
 
@@ -83,6 +94,10 @@ namespace GameController
                 Error?.Invoke("Lost connection to server");
                 return;
             }
+           
+            
+            
+
             string data = state.GetData();
             string[] list = Regex.Split(data, @"(?<=[\n])");
             foreach (string s in list)
@@ -102,6 +117,7 @@ namespace GameController
                     JsonDocument doc = JsonDocument.Parse(s);
                     if (doc.RootElement.TryGetProperty("wall", out _))
                     {
+<<<<<<< HEAD
 
 
                         World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
@@ -113,23 +129,43 @@ namespace GameController
                         World.PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
                         if (world.PowerUps.Contains(power))
                             world.PowerUps.Remove(power);
+<<<<<<< Updated upstream
 
+=======
+=======
+>>>>>>> Stashed changes
                         Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
                         world.Walls.Add(wall);
                     }
                     if (doc.RootElement.TryGetProperty("power", out _))
                     {
                         PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> 031ef4723f20ca60f648d769d3ae452cd2586760
+>>>>>>> Stashed changes
                         world.PowerUps.Add(power);
                     }
                     if (doc.RootElement.TryGetProperty("snake", out _))
                     {
+<<<<<<< Updated upstream
 
                         Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
                         if (world.Snakes.ContainsKey(snake.snake))
                             world.Snakes.Remove(snake.snake);
                         world.Snakes.Add(snake.snake,snake);
+=======
+<<<<<<< HEAD
+                        World.Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
+                        if (world.Snakes.ContainsKey(snake.snake));
+                        world.Snakes.Remove(snake.snake);
+                        world.Snakes.Add(snake.snake, snake);
+=======
+                        Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
+                        world.Snakes.Add(snake);
+>>>>>>> 031ef4723f20ca60f648d769d3ae452cd2586760
+>>>>>>> Stashed changes
                     }
                 }
             }
@@ -143,6 +179,43 @@ namespace GameController
         }
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+      
+        
+
+        private void FirstRecieve(SocketState state)
+        {
+            {
+                if (state.ErrorOccurred)
+                {
+                    // inform the view
+                    Error?.Invoke("Lost connection to server");
+                    return;
+                }
+                
+
+
+
+                string data = state.GetData();
+                string[] list = Regex.Split(data, @"(?<=[\n])");
+                Int32.TryParse(list[0], out int x);
+                world.PlayerID = x;
+                Int32.TryParse(list[1], out int y);
+                world.WorldSize = y;
+                //tell view to update world
+                NewUpdate?.Invoke();
+
+                //switch to normal recieve
+                state.OnNetworkAction = ReceiveData;
+                Networking.GetData(state);
+
+            }
+        }
+=======
+>>>>>>> 031ef4723f20ca60f648d769d3ae452cd2586760
+>>>>>>> Stashed changes
         /// <summary>
         /// Closes the connection with the server
         /// </summary>

@@ -24,7 +24,8 @@ public class WorldPanel : IDrawable
     private IImage background;
     private int viewSize = 500;
     private World.World theWorld = new();
-    private int PlayerID;
+
+    
 
 
     public delegate void ObjectDrawer(object o, ICanvas canvas);
@@ -95,35 +96,9 @@ public class WorldPanel : IDrawable
     private void WallDrawer(object o, ICanvas canvas)
     {
         Wall p = o as Wall;
-        Vector2D diff = p.p1 - p.p2;
-        //if wall is horizontal
-        if (diff.Y == 0)
-        {
-            //total wall lengths
-            int wallNum = (int)diff.X / 50;
-            for (int i = 0; i < wallNum; i++) 
-            {
-                float locX = (float)(p.p1.X + (50 * i)+25);
-               
-                canvas.DrawImage(wall,locX,wall.Height/2,wall.Width,wall.Height);
+        
+        canvas.DrawImage(wall, -wall.Width / 2, -wall.Height/ 2, wall.Width, wall.Height);
 
-            }
-
-        }
-        //if wall is vertical
-        else if (diff.X == 0)
-        {
-            //total wall lengths
-            int wallNum = (int)diff.Y / 50;
-            for (int i = 0; i < wallNum; i++)
-            {
-                float locY = (float)(p.p1.Y + (50 * i) + 25);
-
-                canvas.DrawImage(wall, wall.Width, locY / 2, wall.Width, wall.Height);
-
-            }
-
-        }
     }
 
     /// <summary>
@@ -148,79 +123,24 @@ public class WorldPanel : IDrawable
 
 
 
-    /// <summary>
-    /// A method that can be used as an ObjectDrawer delegate to draw a snake
-    /// </summary>
-    /// <param name="o">The snake to draw</param>
-    /// <param name="canvas"></param>
-  /*  private void SnakeDrawer(object o, ICanvas canvas)
-    {
-        
-
-        Snake s = o as Snake;
-
-        // choose snake unique color
-        canvas.FillColor = colorChooser(s.snake % 10);
-        int width = 20;
-        
-        //for each body part draw a rectangle
-        for (int i = 0; i<s.body.Count-1; i++)
-        {
-            //first bodypart loc
-            Vector2D loc1 = s.body[i];
-
-            //second bodypart loc
-            Vector2D loc2 = s.body[i + 1];
-
-
-           
-
-        }*/
-
-        //Vector2D diff = p.p1 - p.p2;
-        //if wall is horizontal
-        //if (diff.Y == 0)
-        //{
-        //    //total wall lengths
-        //    int wallNum = (int)diff.X / 50;
-        //    for (int i = 0; i < wallNum; i++)
-        //    {
-        //        float locX = (float)(p.p1.X + (50 * i) + 25);
-
-        //        canvas.DrawImage(wall, locX, wall.Height / 2, wall.Width, wall.Height);
-
-        //    }
-
-        //}
-        ////if wall is vertical
-        //else if (diff.X == 0)
-        //{
-        //    //total wall lengths
-        //    int wallNum = (int)diff.Y / 50;
-        //    for (int i = 0; i < wallNum; i++)
-        //    {
-        //        float locY = (float)(p.p1.Y + (50 * i) + 25);
-
-        //        canvas.DrawImage(wall, wall.Width, locY / 2, wall.Width, wall.Height);
-
-        //    }
-
-        //}
-    //}
-
     private void SnakeSegmentDrawer(object o, ICanvas canvas)
     {
         double snakeSegmentLength = (double)o;
-        canvas.FillRectangle(10, 10, 10, -(float)snakeSegmentLength);
+        canvas.FillRectangle(20, 20, 20, -(float)snakeSegmentLength);
     }
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
-        if ( !initializedForDrawing )
+        if (!initializedForDrawing)
             InitializeDrawing();
+
+        //if player does not exist go to center
+
+
         float playerX = 100;
         float playerY = 100;
 
+<<<<<<< Updated upstream
         canvas.Translate(-playerX + (viewSize / 2), -playerY + (viewSize / 2));
 
         canvas.DrawImage(background, -2000 / 2, -2000 / 2, 2000, 2000);
@@ -233,24 +153,92 @@ public class WorldPanel : IDrawable
         foreach (var p in theWorld.Walls)
             WallDrawer(p, canvas);
         foreach (Snake s in theWorld.Snakes.Values)
+=======
+        //if player exists
+        if (theWorld.Snakes.TryGetValue(theWorld.PlayerID, out Snake player))
+>>>>>>> Stashed changes
         {
-            canvas.FillColor = colorChooser(s.snake % 10);
-            for (int i = 0; i < s.body.Count - 1; i++)
-            {
-                // Loop through snake segments, calculate segment length and segment direction
-                double segmentLength = s.body[i].Length()-s.body[i+1].Length();
-                double segmentX = s.body[i].X - s.body[i + 1].X;
-                double segmentY = s.body[i].Y - s.body[i + 1].Y;
-                double segmentDirection = s.body[i].ToAngle();
 
-
-               DrawObjectWithTransform(canvas, segmentLength, segmentX, segmentY, segmentDirection, SnakeSegmentDrawer);
-            }
-
-            
+            //player location
+            playerX = (float)player.body[player.body.Count - 1].X;
+            playerY = (float)player.body[player.body.Count - 1].Y;
         }
 
 
+
+
+
+        canvas.Translate(-playerX + (viewSize / 2), -playerY + (viewSize / 2));
+
+        canvas.DrawImage(background, -theWorld.WorldSize / 2, -theWorld.WorldSize / 2, theWorld.WorldSize, theWorld.WorldSize);
+        // undo previous transformations from last frame
+        canvas.ResetState();
+        // center the view on the middle of the world
+
+        // example code for how to draw
+        // (the image is not visible in the starter code)
+        foreach (var p in theWorld.Walls)
+        {
+            double drawAngle = Vector2D.AngleBetweenPoints(p.p1, p.p2);
+            int segmentSize = -50;
+            if (drawAngle < 0)
+                segmentSize = 50;
+
+            Vector2D diff = p.p1 - p.p2;
+            double locX;
+            double locY;
+            //if wall is horizontal
+            if (diff.Y == 0)
+            {
+                //total wall lengths
+                int wallNum = Math.Abs((int)diff.X / 50);
+                for (int i = 0; i < wallNum; i++)
+                {
+
+                    locX = (p.p1.X + (segmentSize * i));
+                    locY = p.p1.Y;
+                    DrawObjectWithTransform(canvas, p, locX, locY, drawAngle, WallDrawer);
+
+                }
+
+            }
+            //if wall is vertical
+            else if (diff.X == 0)
+            {
+                //total wall lengths
+                int wallNum = Math.Abs((int)diff.Y / 50);
+                for (int i = 0; i < wallNum; i++)
+                {
+                    locX = p.p1.X;
+                    locY = (p.p1.Y + (segmentSize * i));
+
+                    DrawObjectWithTransform(canvas, p, locX, locY, drawAngle, WallDrawer);
+
+                }
+
+
+            }
+        }
+            foreach (Snake s in theWorld.Snakes.Values)
+            {
+                canvas.FillColor = colorChooser(s.snake % 10);
+                for (int i = 0; i < s.body.Count - 1; i++)
+                {
+                    // Loop through snake segments, calculate segment length and segment direction
+                    double segmentLength = s.body[i].Length() - s.body[i + 1].Length();
+                    double segmentX = s.body[i].X - s.body[i + 1].X;
+                    double segmentY = s.body[i].Y - s.body[i + 1].Y;
+                    double segmentDirection = s.body[i].ToAngle();
+
+
+                    DrawObjectWithTransform(canvas, segmentLength, s.body[i].X, s.body[i].Y, segmentDirection, SnakeSegmentDrawer);
+                }
+
+
+            }
+
+
+        
     }
 
     private Color colorChooser(int i)
