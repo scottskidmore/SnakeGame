@@ -3,12 +3,12 @@ namespace World
 {
 	public class World
 	{
-		public List<Snake> Snakes;
+		public Dictionary<int,Snake> Snakes;
 		public List<Wall?> Walls;
 		public List<PowerUp> PowerUps;
 		public World()
 		{
-			Snakes = new List<Snake>();
+			Snakes = new Dictionary<int,Snake>();
 			Walls = new List<Wall?>();
 			PowerUps = new List<PowerUp>();
 

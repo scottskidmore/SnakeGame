@@ -232,7 +232,7 @@ public class WorldPanel : IDrawable
         // (the image is not visible in the starter code)
         foreach (var p in theWorld.Walls)
             WallDrawer(p, canvas);
-        foreach (Snake s in theWorld.Snakes)
+        foreach (Snake s in theWorld.Snakes.Values)
         {
             canvas.FillColor = colorChooser(s.snake % 10);
             for (int i = 0; i < s.body.Count - 1; i++)

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Net.Http.Json;
 using System.Net.Sockets;
@@ -103,6 +103,7 @@ namespace GameController
                     if (doc.RootElement.TryGetProperty("wall", out _))
                     {
 
+
                         World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
                         if (!world.Walls.Contains(wall))
                             world.Walls.Add(wall);
@@ -112,21 +113,23 @@ namespace GameController
                         World.PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
                         if (world.PowerUps.Contains(power))
                             world.PowerUps.Remove(power);
+
                         Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
                         world.Walls.Add(wall);
                     }
                     if (doc.RootElement.TryGetProperty("power", out _))
                     {
                         PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
+
                         world.PowerUps.Add(power);
                     }
                     if (doc.RootElement.TryGetProperty("snake", out _))
                     {
-                        World.Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
-                        if (world.Snakes.Contains(snake))
-                            world.Snakes.Remove(snake);
+
                         Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
-                        world.Snakes.Add(snake);
+                        if (world.Snakes.ContainsKey(snake.snake))
+                            world.Snakes.Remove(snake.snake);
+                        world.Snakes.Add(snake.snake,snake);
                     }
                 }
             }
