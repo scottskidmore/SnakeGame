@@ -5,16 +5,14 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-<<<<<<< Updated upstream
+
 
 using System.Xml.Linq;
 
-=======
-<<<<<<< HEAD
+
+
 using System.Xml.Linq;
-=======
->>>>>>> 031ef4723f20ca60f648d769d3ae452cd2586760
->>>>>>> Stashed changes
+
 using World;
 
 namespace GameController
@@ -117,7 +115,7 @@ namespace GameController
                     JsonDocument doc = JsonDocument.Parse(s);
                     if (doc.RootElement.TryGetProperty("wall", out _))
                     {
-<<<<<<< HEAD
+
 
 
                         World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
@@ -129,43 +127,20 @@ namespace GameController
                         World.PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
                         if (world.PowerUps.Contains(power))
                             world.PowerUps.Remove(power);
-<<<<<<< Updated upstream
-
-=======
-=======
->>>>>>> Stashed changes
-                        Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
-                        world.Walls.Add(wall);
-                    }
-                    if (doc.RootElement.TryGetProperty("power", out _))
-                    {
-                        PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
-<<<<<<< Updated upstream
-
-=======
->>>>>>> 031ef4723f20ca60f648d769d3ae452cd2586760
->>>>>>> Stashed changes
                         world.PowerUps.Add(power);
                     }
+                    
+                    
                     if (doc.RootElement.TryGetProperty("snake", out _))
                     {
-<<<<<<< Updated upstream
+
 
                         Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
                         if (world.Snakes.ContainsKey(snake.snake))
                             world.Snakes.Remove(snake.snake);
                         world.Snakes.Add(snake.snake,snake);
-=======
-<<<<<<< HEAD
-                        World.Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
-                        if (world.Snakes.ContainsKey(snake.snake));
-                        world.Snakes.Remove(snake.snake);
-                        world.Snakes.Add(snake.snake, snake);
-=======
-                        Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
-                        world.Snakes.Add(snake);
->>>>>>> 031ef4723f20ca60f648d769d3ae452cd2586760
->>>>>>> Stashed changes
+
+                        
                     }
                 }
             }
@@ -179,43 +154,84 @@ namespace GameController
         }
 
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-      
-        
+
+
+
 
         private void FirstRecieve(SocketState state)
         {
+
+            if (state.ErrorOccurred)
             {
-                if (state.ErrorOccurred)
-                {
-                    // inform the view
-                    Error?.Invoke("Lost connection to server");
-                    return;
-                }
-                
-
-
-
-                string data = state.GetData();
-                string[] list = Regex.Split(data, @"(?<=[\n])");
-                Int32.TryParse(list[0], out int x);
-                world.PlayerID = x;
-                Int32.TryParse(list[1], out int y);
-                world.WorldSize = y;
-                //tell view to update world
-                NewUpdate?.Invoke();
-
-                //switch to normal recieve
-                state.OnNetworkAction = ReceiveData;
-                Networking.GetData(state);
-
+                // inform the view
+                Error?.Invoke("Lost connection to server");
+                return;
             }
+
+
+
+
+            string data = state.GetData();
+            string[] list = Regex.Split(data, @"(?<=[\n])");
+            Int32.TryParse(list[0], out int x);
+            world.PlayerID = x;
+            Int32.TryParse(list[1], out int y);
+            world.WorldSize = y;
+            foreach (string s in list)
+            {
+                if (s.StartsWith("{"))
+                {
+                    // Ignore empty strings added by the regex splitter
+                    if (s.Length == 0)
+                        continue;
+                    // The regex splitter will include the last string even if it doesn't end with a '\n',
+                    // So we need to ignore it if this happens. 
+                    if (s[s.Length - 1] != '\n')
+                        break;
+
+                    // Then remove it from the SocketState's growable buffer
+                    state.RemoveData(0, s.Length);
+                    JsonDocument doc = JsonDocument.Parse(s);
+                    if (doc.RootElement.TryGetProperty("wall", out _))
+                    {
+
+
+
+                        World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
+                        if (!world.Walls.Contains(wall))
+                            world.Walls.Add(wall);
+                    }
+                    if (doc.RootElement.TryGetProperty("power", out _))
+                    {
+                        World.PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
+                        if (world.PowerUps.Contains(power))
+                            world.PowerUps.Remove(power);
+                        world.PowerUps.Add(power);
+                    }
+
+
+                    if (doc.RootElement.TryGetProperty("snake", out _))
+                    {
+
+
+                        Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
+                        if (world.Snakes.ContainsKey(snake.snake))
+                            world.Snakes.Remove(snake.snake);
+                        world.Snakes.Add(snake.snake, snake);
+
+
+                    }
+                    //tell view to update world
+                    NewUpdate?.Invoke();
+
+                    //switch to normal recieve
+                    state.OnNetworkAction = ReceiveData;
+                    Networking.GetData(state);
+
+                }
+            }
+
         }
-=======
->>>>>>> 031ef4723f20ca60f648d769d3ae452cd2586760
->>>>>>> Stashed changes
         /// <summary>
         /// Closes the connection with the server
         /// </summary>

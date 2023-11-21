@@ -10,11 +10,9 @@ namespace World
 		public int WorldSize;
 		public World()
 		{
-<<<<<<< Updated upstream
+
 			Snakes = new Dictionary<int,Snake>();
-=======
-			Snakes = new Dictionary<int, Snake>();
->>>>>>> Stashed changes
+
 			Walls = new List<Wall?>();
 			PowerUps = new List<PowerUp>();
 

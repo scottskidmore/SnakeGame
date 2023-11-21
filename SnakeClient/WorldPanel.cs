@@ -140,7 +140,7 @@ public class WorldPanel : IDrawable
         float playerX = 100;
         float playerY = 100;
 
-<<<<<<< Updated upstream
+
         canvas.Translate(-playerX + (viewSize / 2), -playerY + (viewSize / 2));
 
         canvas.DrawImage(background, -2000 / 2, -2000 / 2, 2000, 2000);
@@ -153,10 +153,10 @@ public class WorldPanel : IDrawable
         foreach (var p in theWorld.Walls)
             WallDrawer(p, canvas);
         foreach (Snake s in theWorld.Snakes.Values)
-=======
+
         //if player exists
         if (theWorld.Snakes.TryGetValue(theWorld.PlayerID, out Snake player))
->>>>>>> Stashed changes
+
         {
 
             //player location
