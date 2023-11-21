@@ -141,18 +141,6 @@ public class WorldPanel : IDrawable
         float playerY = 100;
 
 
-        canvas.Translate(-playerX + (viewSize / 2), -playerY + (viewSize / 2));
-
-        canvas.DrawImage(background, -2000 / 2, -2000 / 2, 2000, 2000);
-        // undo previous transformations from last frame
-        canvas.ResetState();
-        // center the view on the middle of the world
-        
-        // example code for how to draw
-        // (the image is not visible in the starter code)
-        foreach (var p in theWorld.Walls)
-            WallDrawer(p, canvas);
-        foreach (Snake s in theWorld.Snakes.Values)
 
         //if player exists
         if (theWorld.Snakes.TryGetValue(theWorld.PlayerID, out Snake player))
