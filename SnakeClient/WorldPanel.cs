@@ -153,7 +153,7 @@ public class WorldPanel : IDrawable
     /// </summary>
     /// <param name="o">The snake to draw</param>
     /// <param name="canvas"></param>
-    private void SnakeDrawer(object o, ICanvas canvas)
+  /*  private void SnakeDrawer(object o, ICanvas canvas)
     {
         
 
@@ -175,7 +175,7 @@ public class WorldPanel : IDrawable
 
            
 
-        }
+        }*/
 
         //Vector2D diff = p.p1 - p.p2;
         //if wall is horizontal
@@ -206,12 +206,12 @@ public class WorldPanel : IDrawable
         //    }
 
         //}
-    }
+    //}
 
     private void SnakeSegmentDrawer(object o, ICanvas canvas)
     {
-        int snakeSegmentLength = o as int;
-        canvas.DrawLine(0, 0, 0, -snakeSegmentLength);
+        double snakeSegmentLength = (double)o;
+        canvas.FillRectangle(10, 10, 10, -(float)snakeSegmentLength);
     }
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
@@ -241,11 +241,13 @@ public class WorldPanel : IDrawable
                 double segmentLength = s.body[i].Length()-s.body[i+1].Length();
                 double segmentX = s.body[i].X - s.body[i + 1].X;
                 double segmentY = s.body[i].Y - s.body[i + 1].Y;
-                double segmentDirection = 
+                double segmentDirection = s.body[i].ToAngle();
 
+
+               DrawObjectWithTransform(canvas, segmentLength, segmentX, segmentY, segmentDirection, SnakeSegmentDrawer);
             }
 
-            DrawObjectWithTransform(canvas, segmentLength, segmentX, segmentY, segmentDirection, SnakeSegmentDrawer);
+            
         }
 
 
