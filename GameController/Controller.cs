@@ -1,11 +1,14 @@
 ﻿using System;
+using System;
 using System.Linq;
 using System.Net.Http.Json;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+
 using System.Xml.Linq;
+
 using World;
 
 namespace GameController
@@ -59,14 +62,12 @@ namespace GameController
             //send player name
             string message = name + "\n";
             Networking.Send(theServer.TheSocket, message);
-
-
-
-
-
             // Start an event loop to receive messages from the server
             state.OnNetworkAction = ReceiveData;
             Networking.GetData(state);
+
+
+
         }
 
 
@@ -112,6 +113,12 @@ namespace GameController
                         World.PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
                         if (world.PowerUps.Contains(power))
                             world.PowerUps.Remove(power);
+                        Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
+                        world.Walls.Add(wall);
+                    }
+                    if (doc.RootElement.TryGetProperty("power", out _))
+                    {
+                        PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
                         world.PowerUps.Add(power);
                     }
                     if (doc.RootElement.TryGetProperty("snake", out _))
@@ -119,6 +126,7 @@ namespace GameController
                         World.Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
                         if (world.Snakes.Contains(snake))
                             world.Snakes.Remove(snake);
+                        Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
                         world.Snakes.Add(snake);
                     }
                 }
@@ -133,38 +141,6 @@ namespace GameController
         }
 
 
-        private void ProcessData(SocketState state)
-        {
-            string data=state.GetData();
-            string[] list=data.Split( "\n");
-            foreach (string s in list)
-            {
-                if (s.StartsWith("{")){
-                    JsonDocument doc = JsonDocument.Parse(s);
-                    if (doc.RootElement.TryGetProperty("wall", out _))
-                    {
-                        
-                        World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
-                        if (!world.Walls.Contains(wall))
-                                world.Walls.Add(wall);
-                    }
-                    if (doc.RootElement.TryGetProperty("power", out _))
-                    {
-                        World.PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
-                        if (!world.PowerUps.Contains(power))
-                            world.PowerUps.Add(power);
-                    }
-                    if (doc.RootElement.TryGetProperty("snake", out _))
-                    {
-                        World.Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
-                        if (world.Snakes.Contains(snake))
-                            world.Snakes.Remove(snake);
-                        world.Snakes.Add(snake);
-                    }
-                }
-            }
-
-        }
         /// <summary>
         /// Closes the connection with the server
         /// </summary>
