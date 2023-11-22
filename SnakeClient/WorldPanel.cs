@@ -126,7 +126,7 @@ public class WorldPanel : IDrawable
     private void SnakeSegmentDrawer(object o, ICanvas canvas)
     {
         double snakeSegmentLength = (double)o;
-        canvas.FillRectangle(20, 20, 20, -(float)snakeSegmentLength);
+        canvas.FillRectangle(-5, -5, 10, -(float)snakeSegmentLength);
     }
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
@@ -214,13 +214,13 @@ public class WorldPanel : IDrawable
                 {
                 // Loop through snake segments, calculate segment length and segment direction
 
-                if (s.body[i].GetX() == s.body[i + 1].GetX())
+                if (s.body[s.body.Count - i-1].GetX() == s.body[s.body.Count - i-2].GetX())
                 {
-                    DrawObjectWithTransform(canvas, s.body[i].GetY() - s.body[i + 1].GetY(), s.body[i].X, s.body[i].Y, Vector2D.AngleBetweenPoints(s.body[i], s.body[i+1]), SnakeSegmentDrawer);
+                    DrawObjectWithTransform(canvas, Math.Abs(s.body[s.body.Count - i-1].GetY() - s.body[s.body.Count - i-2].GetY()), s.body[s.body.Count - i-2].X, s.body[s.body.Count - i-2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i-1], s.body[s.body.Count - i-2]), SnakeSegmentDrawer);
                 }
-                if (s.body[i].GetY() == s.body[i + 1].GetY())
+                if (s.body[s.body.Count - i-1].GetY() == s.body[s.body.Count - i -2].GetY())
                 {
-                    DrawObjectWithTransform(canvas, s.body[i].GetX() - s.body[i + 1].GetX(), s.body[i].X, s.body[i].Y, Vector2D.AngleBetweenPoints(s.body[i], s.body[i + 1]), SnakeSegmentDrawer);
+                    DrawObjectWithTransform(canvas,Math.Abs( s.body[s.body.Count - i-1].GetX() - s.body[s.body.Count - i- 2].GetX()), s.body[s.body.Count - i-2].X, s.body[s.body.Count - i-2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i-1], s.body[s.body.Count - i-2]), SnakeSegmentDrawer);
                 }
             }
 
