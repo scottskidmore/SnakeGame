@@ -80,8 +80,8 @@ public partial class MainPage : ContentPage
         //if a moving command was entered
         if (moving != null)
         {
-            string jsonString = JsonSerializer.Serialize(moving);
-            gameController.MessageEntered(jsonString);
+            //string jsonString = JsonSerializer.Serialize(moving);
+            gameController.MessageEntered(moving);
             //reset moving text
             moving = null;
             //disable entry until next frame

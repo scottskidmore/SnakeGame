@@ -212,15 +212,18 @@ public class WorldPanel : IDrawable
                 canvas.FillColor = colorChooser(s.snake % 10);
                 for (int i = 0; i < s.body.Count - 1; i++)
                 {
-                    // Loop through snake segments, calculate segment length and segment direction
-                    double segmentLength = s.body[i].Length() - s.body[i + 1].Length();
-                    double segmentX = s.body[i].X - s.body[i + 1].X;
-                    double segmentY = s.body[i].Y - s.body[i + 1].Y;
-                    double segmentDirection = s.body[i].ToAngle();
+                // Loop through snake segments, calculate segment length and segment direction
 
-
-                    DrawObjectWithTransform(canvas, segmentLength, s.body[i].X, s.body[i].Y, segmentDirection, SnakeSegmentDrawer);
+                if (s.body[i].GetX() == s.body[i + 1].GetX())
+                {
+                    DrawObjectWithTransform(canvas, s.body[i].GetY() - s.body[i + 1].GetY(), s.body[i].X, s.body[i].Y, Vector2D.AngleBetweenPoints(s.body[i], s.body[i+1]), SnakeSegmentDrawer);
                 }
+                if (s.body[i].GetY() == s.body[i + 1].GetY())
+                {
+                    DrawObjectWithTransform(canvas, s.body[i].GetX() - s.body[i + 1].GetX(), s.body[i].X, s.body[i].Y, Vector2D.AngleBetweenPoints(s.body[i], s.body[i + 1]), SnakeSegmentDrawer);
+                }
+            }
+
 
 
             }

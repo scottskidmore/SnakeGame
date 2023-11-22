@@ -11,8 +11,6 @@ using System.Xml.Linq;
 
 
 
-using System.Xml.Linq;
-
 using World;
 
 namespace GameController
@@ -20,8 +18,8 @@ namespace GameController
 	public class Controller
 	{
         //name of player
-        private string name;
-        private SocketState theServer;
+        private string? name;
+        private SocketState? theServer;
         public World.World world;
 
     
@@ -32,7 +30,7 @@ namespace GameController
         public event ErrorHandler? Error;
 
         public delegate void GameUpdateHandler();
-        public event GameUpdateHandler NewUpdate;
+        public event GameUpdateHandler? NewUpdate;
 
         public Controller()
         {
@@ -61,6 +59,11 @@ namespace GameController
         {
             if (state.ErrorOccurred)
             {
+                if (state.ErrorMessage == null)
+                {
+                    Error?.Invoke("Error is null");
+                    return;
+                }
                 // inform the view
                 Error?.Invoke(state.ErrorMessage);
                 return;
@@ -118,16 +121,19 @@ namespace GameController
 
 
 
-                        World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
+                        Wall? wall = JsonSerializer.Deserialize<Wall>(s);
                         if (!world.Walls.Contains(wall))
                             world.Walls.Add(wall);
                     }
                     if (doc.RootElement.TryGetProperty("power", out _))
                     {
-                        World.PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
-                        if (world.PowerUps.Contains(power))
-                            world.PowerUps.Remove(power);
-                        world.PowerUps.Add(power);
+                        PowerUp? power = JsonSerializer.Deserialize<PowerUp>(s);
+                        if (power != null)
+                        {
+                            if (world.PowerUps.Contains(power))
+                                world.PowerUps.Remove(power);
+                            world.PowerUps.Add(power);
+                        }
                     }
                     
                     
@@ -135,11 +141,13 @@ namespace GameController
                     {
 
 
-                        Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
-                        if (world.Snakes.ContainsKey(snake.snake))
-                            world.Snakes.Remove(snake.snake);
-                        world.Snakes.Add(snake.snake,snake);
-
+                        Snake? snake = JsonSerializer.Deserialize<Snake>(s);
+                        if (snake != null)
+                        {
+                            if (world.Snakes.ContainsKey(snake.snake))
+                                world.Snakes.Remove(snake.snake);
+                            world.Snakes.Add(snake.snake, snake);
+                        }
                         
                     }
                 }
@@ -197,16 +205,19 @@ namespace GameController
 
 
 
-                        World.Wall wall = JsonSerializer.Deserialize<World.Wall>(s);
+                        Wall? wall = JsonSerializer.Deserialize<Wall>(s);
                         if (!world.Walls.Contains(wall))
                             world.Walls.Add(wall);
                     }
                     if (doc.RootElement.TryGetProperty("power", out _))
                     {
-                        World.PowerUp power = JsonSerializer.Deserialize<World.PowerUp>(s);
-                        if (world.PowerUps.Contains(power))
-                            world.PowerUps.Remove(power);
-                        world.PowerUps.Add(power);
+                        PowerUp? power = JsonSerializer.Deserialize<PowerUp>(s);
+                        if (power != null)
+                        {
+                            if (world.PowerUps.Contains(power))
+                                world.PowerUps.Remove(power);
+                            world.PowerUps.Add(power);
+                        }
                     }
 
 
@@ -214,13 +225,18 @@ namespace GameController
                     {
 
 
-                        Snake snake = JsonSerializer.Deserialize<World.Snake>(s);
-                        if (world.Snakes.ContainsKey(snake.snake))
-                            world.Snakes.Remove(snake.snake);
-                        world.Snakes.Add(snake.snake, snake);
+                        Snake? snake = JsonSerializer.Deserialize<Snake>(s);
+                        if (snake != null)
+                        {
+                            if (world.Snakes.ContainsKey(snake.snake))
+                                world.Snakes.Remove(snake.snake);
+                            world.Snakes.Add(snake.snake, snake);
+                        }
 
 
                     }
+                }
+            }
                     //tell view to update world
                     NewUpdate?.Invoke();
 
@@ -228,8 +244,8 @@ namespace GameController
                     state.OnNetworkAction = ReceiveData;
                     Networking.GetData(state);
 
-                }
-            }
+                
+            
 
         }
         /// <summary>
@@ -247,7 +263,10 @@ namespace GameController
         public void MessageEntered(string message)
         {
             if (theServer is not null)
-                Networking.Send(theServer.TheSocket, message + "\n");
+            {
+               string s = "{\"moving\":\"" + message + "\"}";
+                Networking.Send(theServer.TheSocket, s + "\n");
+            }
         }
 
         public World.World GetWorld()
