@@ -136,9 +136,11 @@ public partial class MainPage : ContentPage
     /// </summary>
     public void OnFrame()
     {
-        Dispatcher.Dispatch(() => graphicsView.Invalidate());
         //reenable controls
         canMove = true;
+        Dispatcher.Dispatch(() => graphicsView.Invalidate());
+        gameController.CleanUp();
+        
     }
 
     private void ControlsButton_Clicked(object sender, EventArgs e)

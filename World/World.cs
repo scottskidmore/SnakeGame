@@ -6,14 +6,15 @@ namespace World
 		public Dictionary<int,Snake> Snakes;
 		public List<Wall?> Walls;
 		public Dictionary<int,PowerUp> PowerUps;
-		public int PlayerID;
+        public Dictionary<int,DeadSnake> DeadSnakes;
+        public int PlayerID;
 		public int WorldSize;
 		public World()
 		{
 
 			Snakes = new Dictionary<int,Snake>();
-
-			Walls = new List<Wall?>();
+			DeadSnakes = new Dictionary<int,DeadSnake>();
+            Walls = new List<Wall?>();
 			PowerUps = new Dictionary<int, PowerUp>();
 
 		}

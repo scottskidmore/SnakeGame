@@ -136,6 +136,14 @@ public class WorldPanel : IDrawable
         canvas.FillEllipse(-5, 0, width, width);
     }
 
+    private void DeadSnakeDrawer(object o, ICanvas canvas)
+    {
+        DeadSnake ds = o as DeadSnake;
+        int width = 10+(1*ds.framesDead);
+        canvas.FillEllipse(-(width / 2), -(width / 2), width, width);
+        ds.framesDead += 1;
+    }
+
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
         if (!initializedForDrawing)
@@ -229,33 +237,43 @@ public class WorldPanel : IDrawable
             }
             foreach (Snake s in theWorld.Snakes.Values)
             {
-                canvas.FillColor = colorChooser(s.snake % 10);
-                for (int i = 0; i < s.body.Count - 1; i++)
+                if (s.alive == true)
                 {
-                    // Loop through snake segments, calculate segment length and segment direction
 
-                   //draw tail
-                    if(i == 0 )
+                    canvas.FillColor = colorChooser(s.snake % 10);
+                    for (int i = 0; i < s.body.Count - 1; i++)
                     {
-                        DrawObjectWithTransform(canvas, s.body[i], s.body[i].GetX(), s.body[i].GetY(), Vector2D.AngleBetweenPoints(s.body[i], s.body[i+1]), SnakeHeadAndTailDrawer);
-                    }
-                    //draw head
-                    if (i == s.body.Count - 2)
-                    {
-                      
-                        DrawObjectWithTransform(canvas, s.body[i+1], s.body[i+1].GetX(), s.body[i+1].GetY(), Vector2D.AngleBetweenPoints(s.body[i], s.body[i+1]), SnakeHeadAndTailDrawer);
-                       // canvas.FontColor = Colors.GhostWhite;
-                       
-                    }
+                        // Loop through snake segments, calculate segment length and segment direction
 
-                    if (s.body[s.body.Count - i - 1].GetX() == s.body[s.body.Count - i - 2].GetX())
-                    {
-                        DrawObjectWithTransform(canvas, Math.Abs(s.body[s.body.Count - i - 1].GetY() - s.body[s.body.Count - i - 2].GetY()), s.body[s.body.Count - i - 2].X, s.body[s.body.Count - i - 2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i - 1], s.body[s.body.Count - i - 2]), SnakeSegmentDrawer);
+                        //draw tail
+                        if (i == 0)
+                        {
+                            DrawObjectWithTransform(canvas, s.body[i], s.body[i].GetX(), s.body[i].GetY(), Vector2D.AngleBetweenPoints(s.body[i], s.body[i + 1]), SnakeHeadAndTailDrawer);
+                        }
+                        //draw head
+                        if (i == s.body.Count - 2)
+                        {
+
+                            DrawObjectWithTransform(canvas, s.body[i + 1], s.body[i + 1].GetX(), s.body[i + 1].GetY(), Vector2D.AngleBetweenPoints(s.body[i], s.body[i + 1]), SnakeHeadAndTailDrawer);
+                            // canvas.FontColor = Colors.GhostWhite;
+
+                        }
+
+                        if (s.body[s.body.Count - i - 1].GetX() == s.body[s.body.Count - i - 2].GetX())
+                        {
+                            DrawObjectWithTransform(canvas, Math.Abs(s.body[s.body.Count - i - 1].GetY() - s.body[s.body.Count - i - 2].GetY()), s.body[s.body.Count - i - 2].X, s.body[s.body.Count - i - 2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i - 1], s.body[s.body.Count - i - 2]), SnakeSegmentDrawer);
+                        }
+                        if (s.body[s.body.Count - i - 1].GetY() == s.body[s.body.Count - i - 2].GetY())
+                        {
+                            DrawObjectWithTransform(canvas, Math.Abs(s.body[s.body.Count - i - 1].GetX() - s.body[s.body.Count - i - 2].GetX()), s.body[s.body.Count - i - 2].X, s.body[s.body.Count - i - 2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i - 1], s.body[s.body.Count - i - 2]), SnakeSegmentDrawer);
+                        }
                     }
-                    if (s.body[s.body.Count - i - 1].GetY() == s.body[s.body.Count - i - 2].GetY())
-                    {
-                        DrawObjectWithTransform(canvas, Math.Abs(s.body[s.body.Count - i - 1].GetX() - s.body[s.body.Count - i - 2].GetX()), s.body[s.body.Count - i - 2].X, s.body[s.body.Count - i - 2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i - 1], s.body[s.body.Count - i - 2]), SnakeSegmentDrawer);
-                    }
+                }
+                else
+                {
+                    theWorld.DeadSnakes.TryGetValue(s.snake, out DeadSnake ds);
+
+                    DrawObjectWithTransform(canvas, ds, ds.loc.X, ds.loc.Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - 2], s.body[s.body.Count - 1]), DeadSnakeDrawer);
                 }
              
             }
