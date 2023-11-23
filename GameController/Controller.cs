@@ -101,54 +101,57 @@ namespace GameController
 
             string data = state.GetData();
             string[] list = Regex.Split(data, @"(?<=[\n])");
-            foreach (string s in list)
+            lock (world)
             {
-                if (s.StartsWith("{"))
+                foreach (string s in list)
                 {
-                    // Ignore empty strings added by the regex splitter
-                    if (s.Length == 0)
-                        continue;
-                    // The regex splitter will include the last string even if it doesn't end with a '\n',
-                    // So we need to ignore it if this happens. 
-                    if (s[s.Length - 1] != '\n')
-                        break;
-
-                    // Then remove it from the SocketState's growable buffer
-                    state.RemoveData(0, s.Length);
-                    JsonDocument doc = JsonDocument.Parse(s);
-                    if (doc.RootElement.TryGetProperty("wall", out _))
+                    if (s.StartsWith("{"))
                     {
+                        // Ignore empty strings added by the regex splitter
+                        if (s.Length == 0)
+                            continue;
+                        // The regex splitter will include the last string even if it doesn't end with a '\n',
+                        // So we need to ignore it if this happens. 
+                        if (s[s.Length - 1] != '\n')
+                            break;
 
-
-
-                        Wall? wall = JsonSerializer.Deserialize<Wall>(s);
-                        if (!world.Walls.Contains(wall))
-                            world.Walls.Add(wall);
-                    }
-                    if (doc.RootElement.TryGetProperty("power", out _))
-                    {
-                        PowerUp? power = JsonSerializer.Deserialize<PowerUp>(s);
-                        if (power != null)
+                        // Then remove it from the SocketState's growable buffer
+                        state.RemoveData(0, s.Length);
+                        JsonDocument doc = JsonDocument.Parse(s);
+                        if (doc.RootElement.TryGetProperty("wall", out _))
                         {
-                            if (world.PowerUps.Contains(power))
-                                world.PowerUps.Remove(power);
-                            world.PowerUps.Add(power);
+
+
+
+                            Wall? wall = JsonSerializer.Deserialize<Wall>(s);
+                            if (!world.Walls.Contains(wall))
+                                world.Walls.Add(wall);
                         }
-                    }
-                    
-                    
-                    if (doc.RootElement.TryGetProperty("snake", out _))
-                    {
-
-
-                        Snake? snake = JsonSerializer.Deserialize<Snake>(s);
-                        if (snake != null)
+                        if (doc.RootElement.TryGetProperty("power", out _))
                         {
-                            if (world.Snakes.ContainsKey(snake.snake))
-                                world.Snakes.Remove(snake.snake);
-                            world.Snakes.Add(snake.snake, snake);
+                            PowerUp? power = JsonSerializer.Deserialize<PowerUp>(s);
+                            if (power != null)
+                            {
+                                if (world.PowerUps.ContainsKey(power.power))
+                                    world.PowerUps.Remove(power.power);
+                                world.PowerUps.Add(power.power,power);
+                            }
                         }
-                        
+
+
+                        if (doc.RootElement.TryGetProperty("snake", out _))
+                        {
+
+
+                            Snake? snake = JsonSerializer.Deserialize<Snake>(s);
+                            if (snake != null)
+                            {
+                                if (world.Snakes.ContainsKey(snake.snake))
+                                    world.Snakes.Remove(snake.snake);
+                                world.Snakes.Add(snake.snake, snake);
+                            }
+
+                        }
                     }
                 }
             }
@@ -185,55 +188,59 @@ namespace GameController
             world.PlayerID = x;
             Int32.TryParse(list[1], out int y);
             world.WorldSize = y;
-            foreach (string s in list)
+            lock (world)
             {
-                if (s.StartsWith("{"))
+                foreach (string s in list)
                 {
-                    // Ignore empty strings added by the regex splitter
-                    if (s.Length == 0)
-                        continue;
-                    // The regex splitter will include the last string even if it doesn't end with a '\n',
-                    // So we need to ignore it if this happens. 
-                    if (s[s.Length - 1] != '\n')
-                        break;
-
-                    // Then remove it from the SocketState's growable buffer
-                    state.RemoveData(0, s.Length);
-                    JsonDocument doc = JsonDocument.Parse(s);
-                    if (doc.RootElement.TryGetProperty("wall", out _))
+                    if (s.StartsWith("{"))
                     {
+                        // Ignore empty strings added by the regex splitter
+                        if (s.Length == 0)
+                            continue;
+                        // The regex splitter will include the last string even if it doesn't end with a '\n',
+                        // So we need to ignore it if this happens. 
+                        if (s[s.Length - 1] != '\n')
+                            break;
 
-
-
-                        Wall? wall = JsonSerializer.Deserialize<Wall>(s);
-                        if (!world.Walls.Contains(wall))
-                            world.Walls.Add(wall);
-                    }
-                    if (doc.RootElement.TryGetProperty("power", out _))
-                    {
-                        PowerUp? power = JsonSerializer.Deserialize<PowerUp>(s);
-                        if (power != null)
+                        // Then remove it from the SocketState's growable buffer
+                        state.RemoveData(0, s.Length);
+                        JsonDocument doc = JsonDocument.Parse(s);
+                        if (doc.RootElement.TryGetProperty("wall", out _))
                         {
-                            if (world.PowerUps.Contains(power))
-                                world.PowerUps.Remove(power);
-                            world.PowerUps.Add(power);
+
+
+
+                            Wall? wall = JsonSerializer.Deserialize<Wall>(s);
+                            if (!world.Walls.Contains(wall))
+                                world.Walls.Add(wall);
                         }
-                    }
-
-
-                    if (doc.RootElement.TryGetProperty("snake", out _))
-                    {
-
-
-                        Snake? snake = JsonSerializer.Deserialize<Snake>(s);
-                        if (snake != null)
+                         if (doc.RootElement.TryGetProperty("power", out _))
                         {
-                            if (world.Snakes.ContainsKey(snake.snake))
-                                world.Snakes.Remove(snake.snake);
-                            world.Snakes.Add(snake.snake, snake);
+                            PowerUp? power = JsonSerializer.Deserialize<PowerUp>(s);
+                            if (power != null)
+                            {
+                                if (world.PowerUps.ContainsKey(power.power))
+                                    world.PowerUps.Remove(power.power);
+                                world.PowerUps.Add(power.power, power);
+                            }
                         }
 
 
+
+                        if (doc.RootElement.TryGetProperty("snake", out _))
+                        {
+
+
+                            Snake? snake = JsonSerializer.Deserialize<Snake>(s);
+                            if (snake != null)
+                            {
+                                if (world.Snakes.ContainsKey(snake.snake))
+                                    world.Snakes.Remove(snake.snake);
+                                world.Snakes.Add(snake.snake, snake);
+                            }
+
+
+                        }
                     }
                 }
             }

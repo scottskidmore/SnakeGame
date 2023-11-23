@@ -126,7 +126,15 @@ public class WorldPanel : IDrawable
     private void SnakeSegmentDrawer(object o, ICanvas canvas)
     {
         double snakeSegmentLength = (double)o;
+        
         canvas.FillRectangle(-5, -5, 10, -(float)snakeSegmentLength);
+        
+    }
+
+    private void SnakeHeadAndTailDrawer(object o, ICanvas canvas)
+    {
+        int width = 20;
+        canvas.FillEllipse(0, 0, width, width);
     }
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
@@ -165,7 +173,8 @@ public class WorldPanel : IDrawable
 
         // example code for how to draw
         // (the image is not visible in the starter code)
-        
+        lock (theWorld)
+        {
             foreach (var p in theWorld.Walls)
             {
                 double drawAngle = Vector2D.AngleBetweenPoints(p.p1, p.p2);
@@ -212,13 +221,13 @@ public class WorldPanel : IDrawable
                 }
             }
 
-            //foreach (PowerUp p in theWorld.PowerUps)
-            //{
-            //    DrawObjectWithTransform(canvas, p,
-            //          p.loc.GetX(), p.loc.GetY(), 0,
-            //          PowerupDrawer);
+            foreach (PowerUp p in theWorld.PowerUps.Values)
+            {
+                DrawObjectWithTransform(canvas, p,
+                      p.loc.GetX(), p.loc.GetY(), 0,
+                      PowerupDrawer);
 
-            //}
+            }
             foreach (Snake s in theWorld.Snakes.Values)
             {
                 canvas.FillColor = colorChooser(s.snake % 10);
@@ -236,9 +245,17 @@ public class WorldPanel : IDrawable
                     }
                 }
 
+                //draw head tail and write name
+
+                canvas.DrawString(s.name, (float)s.body[s.body.Count - 1].GetX(), (float)s.body[s.body.Count - 1].GetY(), HorizontalAlignment.Right);
+                //Vector2D head = s.body[s.body.Count - 1];
+                //Vector2D Tail = s.body[0];
+                //DrawObjectWithTransform(canvas, head.X - 5, head.X, head.Y, head.ToAngle(), SnakeHeadAndTailDrawer);
+                //DrawObjectWithTransform(canvas, Tail.X - 5, Tail.X, Tail.Y, Tail.ToAngle(), SnakeHeadAndTailDrawer);
 
 
             }
+        }
         
 
 

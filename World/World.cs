@@ -5,7 +5,7 @@ namespace World
 	{
 		public Dictionary<int,Snake> Snakes;
 		public List<Wall?> Walls;
-		public List<PowerUp> PowerUps;
+		public Dictionary<int,PowerUp> PowerUps;
 		public int PlayerID;
 		public int WorldSize;
 		public World()
@@ -14,7 +14,7 @@ namespace World
 			Snakes = new Dictionary<int,Snake>();
 
 			Walls = new List<Wall?>();
-			PowerUps = new List<PowerUp>();
+			PowerUps = new Dictionary<int, PowerUp>();
 
 		}
 	}
