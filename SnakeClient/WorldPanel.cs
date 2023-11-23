@@ -97,7 +97,7 @@ public class WorldPanel : IDrawable
     {
         Wall p = o as Wall;
         
-        canvas.DrawImage(wall, -(wall.Width / 2), -(wall.Height/ 2), wall.Width, wall.Height);
+        canvas.DrawImage(wall, -(50/ 2), -(50/ 2), 50, 50);
 
     }
 
@@ -153,10 +153,10 @@ public class WorldPanel : IDrawable
         }
 
 
+        
 
 
-
-        canvas.Translate(-playerX + (viewSize / 2), -playerY + (viewSize / 2));
+        canvas.Translate(-playerX + (dirtyRect.Width / 2), -playerY + (dirtyRect.Height / 2));
 
         canvas.DrawImage(background, -theWorld.WorldSize / 2, -theWorld.WorldSize / 2, theWorld.WorldSize, theWorld.WorldSize);
         // undo previous transformations from last frame
@@ -165,71 +165,81 @@ public class WorldPanel : IDrawable
 
         // example code for how to draw
         // (the image is not visible in the starter code)
-        foreach (var p in theWorld.Walls)
-        {
-            double drawAngle = Vector2D.AngleBetweenPoints(p.p1, p.p2);
-            int segmentSize = -50;
-            if (drawAngle ==-90 || drawAngle == 0)
+        
+            foreach (var p in theWorld.Walls)
             {
-                segmentSize = 50;
-            }
-                
-
-            Vector2D diff = p.p1 - p.p2;
-            double locX;
-            double locY;
-            //if wall is horizontal
-            if (diff.Y == 0)
-            {
-                //total wall lengths
-                int wallNum = Math.Abs((int)diff.X / 50);
-                for (int i = 0; i < wallNum; i++)
+                double drawAngle = Vector2D.AngleBetweenPoints(p.p1, p.p2);
+                int segmentSize = -50;
+                if (drawAngle == -90 || drawAngle == 0)
                 {
-
-                    locX = (p.p1.X + (segmentSize * i));
-                    locY = p.p1.Y;
-                    DrawObjectWithTransform(canvas, p, locX, locY, drawAngle, WallDrawer);
-
-                }
-
-            }
-            //if wall is vertical
-            else if (diff.X == 0)
-            {
-                //total wall lengths
-                int wallNum = Math.Abs((int)diff.Y / 50);
-                for (int i = 0; i < wallNum; i++)
-                {
-                    locX = p.p1.X;
-                    locY = (p.p1.Y + (segmentSize * i));
-
-                    DrawObjectWithTransform(canvas, p, locX, locY, drawAngle, WallDrawer);
-
+                    segmentSize = 50;
                 }
 
 
+                Vector2D diff = p.p1 - p.p2;
+                double locX;
+                double locY;
+                //if wall is horizontal
+                if (diff.Y == 0)
+                {
+                    //total wall lengths
+                    int wallNum = Math.Abs((int)diff.X / 50);
+                    for (int i = 0; i < wallNum + 1; i++)
+                    {
+
+                        locX = (p.p1.X + (segmentSize * i));
+                        locY = p.p1.Y;
+                        DrawObjectWithTransform(canvas, p, locX, locY, drawAngle, WallDrawer);
+
+                    }
+
+                }
+                //if wall is vertical
+                else if (diff.X == 0)
+                {
+                    //total wall lengths
+                    int wallNum = Math.Abs((int)diff.Y / 50);
+                    for (int i = 0; i < wallNum + 1; i++)
+                    {
+                        locX = p.p1.X;
+                        locY = (p.p1.Y + (segmentSize * i));
+
+                        DrawObjectWithTransform(canvas, p, locX, locY, drawAngle, WallDrawer);
+
+                    }
+
+
+                }
             }
-        }
+
+            //foreach (PowerUp p in theWorld.PowerUps)
+            //{
+            //    DrawObjectWithTransform(canvas, p,
+            //          p.loc.GetX(), p.loc.GetY(), 0,
+            //          PowerupDrawer);
+
+            //}
             foreach (Snake s in theWorld.Snakes.Values)
             {
                 canvas.FillColor = colorChooser(s.snake % 10);
                 for (int i = 0; i < s.body.Count - 1; i++)
                 {
-                // Loop through snake segments, calculate segment length and segment direction
+                    // Loop through snake segments, calculate segment length and segment direction
 
-                if (s.body[s.body.Count - i-1].GetX() == s.body[s.body.Count - i-2].GetX())
-                {
-                    DrawObjectWithTransform(canvas, Math.Abs(s.body[s.body.Count - i-1].GetY() - s.body[s.body.Count - i-2].GetY()), s.body[s.body.Count - i-2].X, s.body[s.body.Count - i-2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i-1], s.body[s.body.Count - i-2]), SnakeSegmentDrawer);
+                    if (s.body[s.body.Count - i - 1].GetX() == s.body[s.body.Count - i - 2].GetX())
+                    {
+                        DrawObjectWithTransform(canvas, Math.Abs(s.body[s.body.Count - i - 1].GetY() - s.body[s.body.Count - i - 2].GetY()), s.body[s.body.Count - i - 2].X, s.body[s.body.Count - i - 2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i - 1], s.body[s.body.Count - i - 2]), SnakeSegmentDrawer);
+                    }
+                    if (s.body[s.body.Count - i - 1].GetY() == s.body[s.body.Count - i - 2].GetY())
+                    {
+                        DrawObjectWithTransform(canvas, Math.Abs(s.body[s.body.Count - i - 1].GetX() - s.body[s.body.Count - i - 2].GetX()), s.body[s.body.Count - i - 2].X, s.body[s.body.Count - i - 2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i - 1], s.body[s.body.Count - i - 2]), SnakeSegmentDrawer);
+                    }
                 }
-                if (s.body[s.body.Count - i-1].GetY() == s.body[s.body.Count - i -2].GetY())
-                {
-                    DrawObjectWithTransform(canvas,Math.Abs( s.body[s.body.Count - i-1].GetX() - s.body[s.body.Count - i- 2].GetX()), s.body[s.body.Count - i-2].X, s.body[s.body.Count - i-2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i-1], s.body[s.body.Count - i-2]), SnakeSegmentDrawer);
-                }
-            }
 
 
 
             }
+        
 
 
         
