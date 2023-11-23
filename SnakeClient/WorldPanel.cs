@@ -14,8 +14,7 @@ using System.Net;
 using Font = Microsoft.Maui.Graphics.Font;
 using SizeF = Microsoft.Maui.Graphics.SizeF;
 using World;
-
-
+using Microsoft.Maui.Graphics;
 
 namespace SnakeGame;
 public class WorldPanel : IDrawable
@@ -133,8 +132,8 @@ public class WorldPanel : IDrawable
 
     private void SnakeHeadAndTailDrawer(object o, ICanvas canvas)
     {
-        int width = 20;
-        canvas.FillEllipse(0, 0, width, width);
+        int width = 10;
+        canvas.FillEllipse(-5, 0, width, width);
     }
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
@@ -235,6 +234,20 @@ public class WorldPanel : IDrawable
                 {
                     // Loop through snake segments, calculate segment length and segment direction
 
+                   //draw tail
+                    if(i == 0 )
+                    {
+                        DrawObjectWithTransform(canvas, s.body[i], s.body[i].GetX(), s.body[i].GetY(), Vector2D.AngleBetweenPoints(s.body[i], s.body[i+1]), SnakeHeadAndTailDrawer);
+                    }
+                    //draw head
+                    if (i == s.body.Count - 2)
+                    {
+                      
+                        DrawObjectWithTransform(canvas, s.body[i+1], s.body[i+1].GetX(), s.body[i+1].GetY(), Vector2D.AngleBetweenPoints(s.body[i], s.body[i+1]), SnakeHeadAndTailDrawer);
+                       // canvas.FontColor = Colors.GhostWhite;
+                       
+                    }
+
                     if (s.body[s.body.Count - i - 1].GetX() == s.body[s.body.Count - i - 2].GetX())
                     {
                         DrawObjectWithTransform(canvas, Math.Abs(s.body[s.body.Count - i - 1].GetY() - s.body[s.body.Count - i - 2].GetY()), s.body[s.body.Count - i - 2].X, s.body[s.body.Count - i - 2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i - 1], s.body[s.body.Count - i - 2]), SnakeSegmentDrawer);
@@ -244,23 +257,25 @@ public class WorldPanel : IDrawable
                         DrawObjectWithTransform(canvas, Math.Abs(s.body[s.body.Count - i - 1].GetX() - s.body[s.body.Count - i - 2].GetX()), s.body[s.body.Count - i - 2].X, s.body[s.body.Count - i - 2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i - 1], s.body[s.body.Count - i - 2]), SnakeSegmentDrawer);
                     }
                 }
-
-                //draw head tail and write name
-
-                canvas.DrawString(s.name, (float)s.body[s.body.Count - 1].GetX(), (float)s.body[s.body.Count - 1].GetY(), HorizontalAlignment.Right);
-                //Vector2D head = s.body[s.body.Count - 1];
-                //Vector2D Tail = s.body[0];
-                //DrawObjectWithTransform(canvas, head.X - 5, head.X, head.Y, head.ToAngle(), SnakeHeadAndTailDrawer);
-                //DrawObjectWithTransform(canvas, Tail.X - 5, Tail.X, Tail.Y, Tail.ToAngle(), SnakeHeadAndTailDrawer);
-
-
+             
             }
+
+            //draw head tail and write name
+
+            //canvas.DrawString(s.name, (float)s.body[s.body.Count - 1].GetX(), (float)s.body[s.body.Count - 1].GetY(), HorizontalAlignment.Right);
+            //Vector2D head = s.body[s.body.Count - 1];
+            //Vector2D Tail = s.body[0];
+            //DrawObjectWithTransform(canvas, head.X - 5, head.X, head.Y, head.ToAngle(), SnakeHeadAndTailDrawer);
+            //DrawObjectWithTransform(canvas, Tail.X - 5, Tail.X, Tail.Y, Tail.ToAngle(), SnakeHeadAndTailDrawer);
+
+
+        }
         }
         
 
 
         
-    }
+    
 
     private Color colorChooser(int i)
     {
