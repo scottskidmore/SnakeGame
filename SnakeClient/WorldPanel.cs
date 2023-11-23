@@ -97,7 +97,7 @@ public class WorldPanel : IDrawable
     {
         Wall p = o as Wall;
         
-        canvas.DrawImage(wall, -wall.Width / 2, -wall.Height/ 2, wall.Width, wall.Height);
+        canvas.DrawImage(wall, -(wall.Width / 2), -(wall.Height/ 2), wall.Width, wall.Height);
 
     }
 
@@ -169,8 +169,11 @@ public class WorldPanel : IDrawable
         {
             double drawAngle = Vector2D.AngleBetweenPoints(p.p1, p.p2);
             int segmentSize = -50;
-            if (drawAngle < 0)
+            if (drawAngle ==-90 || drawAngle == 0)
+            {
                 segmentSize = 50;
+            }
+                
 
             Vector2D diff = p.p1 - p.p2;
             double locX;
