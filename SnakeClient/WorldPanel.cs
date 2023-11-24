@@ -99,6 +99,20 @@ public class WorldPanel : IDrawable
         canvas.DrawImage(wall, -(50/ 2), -(50/ 2), 50, 50);
 
     }
+    /// <summary>
+    /// A method that can be used as an ObjectDrawer delegate to draw a name
+    /// </summary>
+    /// <param name="o">The wall to draw</param>
+    /// <param name="canvas"></param>
+    private void NameDrawer(object o, ICanvas canvas)
+    {
+        string s = o as string;
+        canvas.FontColor = Colors.Blue;
+        canvas.FontSize = 18;
+        canvas.Font = Font.DefaultBold;
+        canvas.DrawString(s, 0,0,50,50, HorizontalAlignment.Center, VerticalAlignment.Center);
+
+    }
 
     /// <summary>
     /// A method that can be used as an ObjectDrawer delegate to draw a Powerup
@@ -146,6 +160,7 @@ public class WorldPanel : IDrawable
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
+       
         if (!initializedForDrawing)
             InitializeDrawing();
 
@@ -165,6 +180,7 @@ public class WorldPanel : IDrawable
             //player location
             playerX = (float)player.body[player.body.Count - 1].X;
             playerY = (float)player.body[player.body.Count - 1].Y;
+
         }
 
 
@@ -172,7 +188,6 @@ public class WorldPanel : IDrawable
 
 
         canvas.Translate(-playerX + (dirtyRect.Width / 2), -playerY + (dirtyRect.Height / 2));
-
         canvas.DrawImage(background, -theWorld.WorldSize / 2, -theWorld.WorldSize / 2, theWorld.WorldSize, theWorld.WorldSize);
         // undo previous transformations from last frame
         canvas.ResetState();
@@ -255,6 +270,8 @@ public class WorldPanel : IDrawable
                         {
 
                             DrawObjectWithTransform(canvas, s.body[i + 1], s.body[i + 1].GetX(), s.body[i + 1].GetY(), Vector2D.AngleBetweenPoints(s.body[i], s.body[i + 1]), SnakeHeadAndTailDrawer);
+                            DrawObjectWithTransform(canvas, s.name, s.body[i + 1].GetX(), s.body[i + 1].GetY(), 0, NameDrawer);
+                            
                             // canvas.FontColor = Colors.GhostWhite;
 
                         }
