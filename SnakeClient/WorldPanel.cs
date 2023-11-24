@@ -108,15 +108,20 @@ public class WorldPanel : IDrawable
     private void PowerupDrawer(object o, ICanvas canvas)
     {
         PowerUp p = o as PowerUp;
-        int width = 10;
-        if (p.power % 2 == 0)
-            canvas.FillColor = Colors.Orange;
-        else
+        int width = 20;
+        
+            
+        
             canvas.FillColor = Colors.Green;
 
         // Ellipses are drawn starting from the top-left corner.
         // So if we want the circle centered on the powerup's location, we have to offset it
         // by half its size to the left (-width/2) and up (-height/2)
+        canvas.FillEllipse(-(width / 2), -(width / 2), width, width);
+
+        canvas.FillColor = Colors.Orange;
+        width = 10;
+
         canvas.FillEllipse(-(width / 2), -(width / 2), width, width);
     }
 

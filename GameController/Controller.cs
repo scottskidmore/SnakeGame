@@ -290,7 +290,7 @@ namespace GameController
             }
             foreach (Snake s in world.Snakes.Values)
             {
-                if (s.died == true)
+                if (s.died == true&&!world.DeadSnakes.ContainsKey(s.snake))
                 {
                     DeadSnake ds = new DeadSnake(s.snake, s.body[s.body.Count - 1]);
                     world.DeadSnakes.Add(s.snake,ds);
@@ -300,7 +300,7 @@ namespace GameController
             foreach(DeadSnake ds in world.DeadSnakes.Values)
             {
                 if (world.Snakes.TryGetValue(ds.snake, out Snake? s))
-                    if (s.alive == true)
+                    if (s.alive == true||s.dc == true)
                         world.DeadSnakes.Remove(s.snake);
             }
         }
