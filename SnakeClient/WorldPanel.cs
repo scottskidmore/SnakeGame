@@ -354,9 +354,8 @@ public class WorldPanel : IDrawable
                 }
                 
             }
-            float x = playerX;
-            float y = playerY;
-            DrawObjectWithTransform(canvas, " Current Largest Snake: " + topScoreName + " Score: " + topScore, x - 500, y - 925, 0, ScoreDrawer);
+            
+            DrawObjectWithTransform(canvas, " Current Largest Snake: " + topScoreName + " Score: " + topScore, playerX - 500, playerY - 925, 0, ScoreDrawer);
 
 
         }
