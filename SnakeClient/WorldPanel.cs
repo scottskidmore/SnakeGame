@@ -121,6 +121,21 @@ public class WorldPanel : IDrawable
     }
 
     /// <summary>
+    /// A method that can be used as an ObjectDrawer delegate to draw a name
+    /// </summary>
+    /// <param name="o">The wall to draw</param>
+    /// <param name="canvas"></param>
+    private void ScoreDrawer(object o, ICanvas canvas)
+    {
+        string s = o as string;
+        canvas.FontColor = Colors.Black;
+        canvas.FontSize = 14;
+        canvas.Font = Font.DefaultBold;
+        canvas.DrawString(s, 0, 0, 1000, 1000, HorizontalAlignment.Center, VerticalAlignment.Center);
+
+    }
+
+    /// <summary>
     /// A method that can be used as an ObjectDrawer delegate to draw a Powerup
     /// </summary>
     /// <param name="o">The PowerUp to draw</param>
@@ -280,6 +295,9 @@ public class WorldPanel : IDrawable
                       PowerupDrawer);
 
             }
+
+            int topScore = 0;
+            string topScoreName = ""; 
             foreach (Snake s in theWorld.Snakes.Values)
             {
                 if (s.alive == true)
@@ -316,8 +334,14 @@ public class WorldPanel : IDrawable
                             
                         }
                     }
+                    if (s.score > topScore)
+                    {
+                        topScore = s.score;
+                        topScoreName = s.name;
+                    }
+                    DrawObjectWithTransform(canvas, s.name + " Score: " + s.score, s.body[s.body.Count - 1].GetX(), s.body[s.body.Count - 1].GetY(), 0, NameDrawer);
                     
-                    DrawObjectWithTransform(canvas, s.name +" Score: "+s.score, s.body[s.body.Count - 1].GetX(), s.body[s.body.Count - 1].GetY(), 0, NameDrawer);
+                    
                 }
                 else
                 {
@@ -328,8 +352,13 @@ public class WorldPanel : IDrawable
                             DrawObjectWithTransform(canvas, ds, ds.loc.X, ds.loc.Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - 2], s.body[s.body.Count - 1]), DeadSnakeDrawer);
                     }
                 }
-             
+                
             }
+            float x = playerX;
+            float y = playerY;
+            DrawObjectWithTransform(canvas, " Current Largest Snake: " + topScoreName + " Score: " + topScore, x - 500, y - 925, 0, ScoreDrawer);
+
+
         }
         }
         
