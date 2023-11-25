@@ -301,6 +301,7 @@ namespace GameController
                 }
                 foreach (DeadSnake ds in world.DeadSnakes.Values)
                 {
+
                     if (world.Snakes.TryGetValue(ds.snake, out Snake? s))
                         if (s.alive == true || s.dc == true)
                             world.DeadSnakes.Remove(s.snake);

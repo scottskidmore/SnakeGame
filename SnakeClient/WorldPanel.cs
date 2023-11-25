@@ -21,6 +21,7 @@ public class WorldPanel : IDrawable
 {
     private IImage wall;
     private IImage background;
+    private IImage explosion;
     private int viewSize = 500;
     private World.World theWorld = new();
 
@@ -61,6 +62,7 @@ public class WorldPanel : IDrawable
     {
         wall = loadImage( "wallsprite.png" );
         background = loadImage( "background.png" );
+        explosion = loadImage("explosion.png");
         initializedForDrawing = true;
     }
 
@@ -107,7 +109,7 @@ public class WorldPanel : IDrawable
     private void NameDrawer(object o, ICanvas canvas)
     {
         string s = o as string;
-        canvas.FontColor = Colors.Blue;
+        canvas.FontColor = Colors.Black;
         canvas.FontSize = 14;
         canvas.Font = Font.DefaultBold;
         canvas.DrawString(s,- 50,-40,100,100, HorizontalAlignment.Center, VerticalAlignment.Center);
@@ -158,9 +160,10 @@ public class WorldPanel : IDrawable
     private void DeadSnakeDrawer(object o, ICanvas canvas)
     {
         DeadSnake ds = o as DeadSnake;
+        int timer = ds.framesDead;
         float width = 10+(1*ds.framesDead);
         canvas.FillColor= Colors.Black;
-        canvas.FillEllipse(-(width / 2), -(width / 2), width, width);
+        canvas.DrawImage(explosion, -(width / 2), -(width / 2), width, width);
         ds.framesDead += 1;
     }
 
@@ -298,8 +301,8 @@ public class WorldPanel : IDrawable
                     theWorld.DeadSnakes.TryGetValue(s.snake, out DeadSnake ds);
                     if (ds != null)
                     {
-
-                        DrawObjectWithTransform(canvas, ds, ds.loc.X, ds.loc.Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - 2], s.body[s.body.Count - 1]), DeadSnakeDrawer);
+                        if(ds.framesDead<60)
+                            DrawObjectWithTransform(canvas, ds, ds.loc.X, ds.loc.Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - 2], s.body[s.body.Count - 1]), DeadSnakeDrawer);
                     }
                 }
              
