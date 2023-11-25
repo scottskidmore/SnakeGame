@@ -5,12 +5,18 @@ using System.Text.Json;
 using World;
 
 namespace SnakeGame;
-
+/// <summary>
+/// A Class that provides the maui function for the game client.
+/// </summary>
 public partial class MainPage : ContentPage
 {
     Controller gameController = new();
     private string moving;
     private bool canMove = false;
+    /// <summary>
+    /// Constructor that initializes the images, preps the error
+    /// handler and gets the current world.
+    /// </summary>
     public MainPage()
     {
         InitializeComponent();
@@ -43,7 +49,12 @@ public partial class MainPage : ContentPage
     {
         keyboardHack.Focus();
     }
-
+    /// <summary>
+    /// This method checks if the player input has changed
+    /// and informs the controller if it has
+    /// </summary>
+    /// <param name="sender">The Entry that holds the player input</param>
+    /// <param name="args">Event that provides the previous and current text values</param>
     void OnTextChanged(object sender, TextChangedEventArgs args)
     {
         Entry entry = (Entry)sender;
@@ -91,13 +102,6 @@ public partial class MainPage : ContentPage
         entry.Text = "";
         
     }
-
-    private void NetworkErrorHandler()
-    {
-        DisplayAlert("Error", "Disconnected from server", "OK");
-    }
-
-
     /// <summary>
     /// Event handler for the connect button
     /// We will put the connection attempt interface here in the view.
@@ -142,7 +146,9 @@ public partial class MainPage : ContentPage
         gameController.CleanUp();
         
     }
-
+    /// <summary>
+    /// Shows a window explaining the controls
+    /// </summary>
     private void ControlsButton_Clicked(object sender, EventArgs e)
     {
         DisplayAlert("Controls",
@@ -152,7 +158,9 @@ public partial class MainPage : ContentPage
                      "D:\t\t Move right\n",
                      "OK");
     }
-
+    /// <summary>
+    /// Shows a window showing an about page.
+    /// </summary>
     private void AboutButton_Clicked(object sender, EventArgs e)
     {
         DisplayAlert("About",
@@ -160,7 +168,10 @@ public partial class MainPage : ContentPage
       "Implementation by ...\n" +
         "CS 3500 Fall 2022, University of Utah", "OK");
     }
-
+    /// <summary>
+    /// Focuses the keyboard on the entry so the inputs can
+    /// be collected.
+    /// </summary>
     private void ContentPage_Focused(object sender, FocusEventArgs e)
     {
         if (!connectButton.IsEnabled)

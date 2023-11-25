@@ -4,6 +4,10 @@ using SnakeGame;
 
 namespace World
 {
+	/// <summary>
+	/// Class for the Snake object. It holds all the information
+	/// that the server provides for the snake object.
+	/// </summary>
 	public class Snake
 	{
 		public int snake { get; set; }

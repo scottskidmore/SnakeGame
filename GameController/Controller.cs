@@ -15,6 +15,10 @@ using World;
 
 namespace GameController
 {
+    /// <summary>
+    /// MVC Controler this class allows the view and model to work
+    /// together and handles all the network calls.
+    /// </summary>
 	public class Controller
 	{
         //name of player
@@ -168,7 +172,11 @@ namespace GameController
 
 
 
-
+        /// <summary>
+        /// Handles the first recieve that includes the player ID
+        /// and the world size.
+        /// </summary>
+        /// <param name="state">The current socket state</param>
         private void FirstRecieve(SocketState state)
         {
 

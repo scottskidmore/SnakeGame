@@ -17,12 +17,14 @@ using World;
 using Microsoft.Maui.Graphics;
 
 namespace SnakeGame;
+/// <summary>
+/// Class that provides all the function for the view.
+/// </summary>
 public class WorldPanel : IDrawable
 {
     private IImage wall;
     private IImage background;
     private IImage explosion;
-    private int viewSize = 500;
     private World.World theWorld = new();
 
     
@@ -32,7 +34,10 @@ public class WorldPanel : IDrawable
 
     private GraphicsView graphicsView = new();
     private bool initializedForDrawing = false;
-
+    /// <summary>
+    /// Loads an image from the image file as an IIamge object.
+    /// </summary>
+    /// <param name="name">Name of the file</param> 
     private IImage loadImage(string name)
     {
         Assembly assembly = GetType().GetTypeInfo().Assembly;
@@ -46,18 +51,17 @@ public class WorldPanel : IDrawable
 #endif
         }
     }
-
-    public WorldPanel()
-    {
-       
-        
-    }
-
+    /// <summary>
+    /// Sets the class world to the world provided to the method.
+    /// </summary>
+    /// <param name="w">The world being passed in</param>
     public void SetWorld(World.World w)
     {
         theWorld = w;
     }
-
+    /// <summary>
+    /// Loads in all the IImages needed for drawing.
+    /// </summary>
     private void InitializeDrawing()
     {
         wall = loadImage( "wallsprite.png" );
@@ -112,7 +116,7 @@ public class WorldPanel : IDrawable
         canvas.FontColor = Colors.Black;
         canvas.FontSize = 14;
         canvas.Font = Font.DefaultBold;
-        canvas.DrawString(s,- 50,-40,100,100, HorizontalAlignment.Center, VerticalAlignment.Center);
+        canvas.DrawString(s,- 50,-40,100,150, HorizontalAlignment.Center, VerticalAlignment.Center);
 
     }
 
@@ -142,7 +146,11 @@ public class WorldPanel : IDrawable
     }
 
 
-
+    /// <summary>
+    /// Method that draws each segment of the snake.
+    /// </summary>
+    /// <param name="o">The length of the segment</param>
+    /// <param name="canvas">The canvas being drawn to</param>
     private void SnakeSegmentDrawer(object o, ICanvas canvas)
     {
         double snakeSegmentLength = (double)o;
@@ -150,13 +158,21 @@ public class WorldPanel : IDrawable
         canvas.FillRectangle(-5, -5, 10, -(float)snakeSegmentLength);
         
     }
-
+    /// <summary>
+    /// Method that draws the head and tail of the snake.
+    /// </summary>
+    /// <param name="o"></param>
+    /// <param name="canvas">The canvas being drawn to</param>
     private void SnakeHeadAndTailDrawer(object o, ICanvas canvas)
     {
         int width = 10;
         canvas.FillEllipse(-5, 0, width, width);
     }
-
+    /// <summary>
+    /// Draws the death animation when a snake dies.
+    /// </summary>
+    /// <param name="o">The dead snake object</param>
+    /// <param name="canvas">The canvas being drawn to</param>
     private void DeadSnakeDrawer(object o, ICanvas canvas)
     {
         DeadSnake ds = o as DeadSnake;
@@ -166,7 +182,12 @@ public class WorldPanel : IDrawable
         canvas.DrawImage(explosion, -(width / 2), -(width / 2), width, width);
         ds.framesDead += 1;
     }
-
+    /// <summary>
+    /// Method that handles drawing each frame of the game
+    /// based on the information from the server.
+    /// </summary>
+    /// <param name="canvas">The canvas being drawn to</param>
+    /// <param name="dirtyRect">RectF object that sets the size of the game view</param>
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
        
@@ -185,7 +206,6 @@ public class WorldPanel : IDrawable
         if (theWorld.Snakes.TryGetValue(theWorld.PlayerID, out Snake player))
 
         {
-
             //player location
             playerX = (float)player.body[player.body.Count - 1].X;
             playerY = (float)player.body[player.body.Count - 1].Y;
@@ -198,6 +218,7 @@ public class WorldPanel : IDrawable
 
         canvas.Translate(-playerX + (dirtyRect.Width / 2), -playerY + (dirtyRect.Height / 2));
         canvas.DrawImage(background, -theWorld.WorldSize / 2, -theWorld.WorldSize / 2, theWorld.WorldSize, theWorld.WorldSize);
+
         // undo previous transformations from last frame
         
         // center the view on the middle of the world
@@ -265,6 +286,7 @@ public class WorldPanel : IDrawable
                 {
 
                     canvas.FillColor = colorChooser(s.snake % 10);
+                    double score = 0;
                     for (int i = 0; i < s.body.Count - 1; i++)
                     {
                         // Loop through snake segments, calculate segment length and segment direction
@@ -288,13 +310,16 @@ public class WorldPanel : IDrawable
                         if (s.body[s.body.Count - i - 1].GetX() == s.body[s.body.Count - i - 2].GetX())
                         {
                             DrawObjectWithTransform(canvas, Math.Abs(s.body[s.body.Count - i - 1].GetY() - s.body[s.body.Count - i - 2].GetY()), s.body[s.body.Count - i - 2].X, s.body[s.body.Count - i - 2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i - 1], s.body[s.body.Count - i - 2]), SnakeSegmentDrawer);
+                            score = score + Math.Abs(s.body[s.body.Count - i - 1].GetY() - s.body[s.body.Count - i - 2].GetY());
                         }
                         if (s.body[s.body.Count - i - 1].GetY() == s.body[s.body.Count - i - 2].GetY())
                         {
                             DrawObjectWithTransform(canvas, Math.Abs(s.body[s.body.Count - i - 1].GetX() - s.body[s.body.Count - i - 2].GetX()), s.body[s.body.Count - i - 2].X, s.body[s.body.Count - i - 2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i - 1], s.body[s.body.Count - i - 2]), SnakeSegmentDrawer);
+                            score = score + Math.Abs(s.body[s.body.Count - i - 1].GetX() - s.body[s.body.Count - i - 2].GetX());
                         }
                     }
-                    DrawObjectWithTransform(canvas, s.name, s.body[s.body.Count - 1].GetX(), s.body[s.body.Count - 1].GetY(), 0, NameDrawer);
+                    
+                    DrawObjectWithTransform(canvas, s.name +" Score: "+score, s.body[s.body.Count - 1].GetX(), s.body[s.body.Count - 1].GetY(), 0, NameDrawer);
                 }
                 else
                 {
@@ -307,16 +332,6 @@ public class WorldPanel : IDrawable
                 }
              
             }
-
-            //draw head tail and write name
-
-            //canvas.DrawString(s.name, (float)s.body[s.body.Count - 1].GetX(), (float)s.body[s.body.Count - 1].GetY(), HorizontalAlignment.Right);
-            //Vector2D head = s.body[s.body.Count - 1];
-            //Vector2D Tail = s.body[0];
-            //DrawObjectWithTransform(canvas, head.X - 5, head.X, head.Y, head.ToAngle(), SnakeHeadAndTailDrawer);
-            //DrawObjectWithTransform(canvas, Tail.X - 5, Tail.X, Tail.Y, Tail.ToAngle(), SnakeHeadAndTailDrawer);
-
-
         }
         }
         
@@ -324,7 +339,11 @@ public class WorldPanel : IDrawable
 
         
     
-
+    /// <summary>
+    /// Method for choosing a color for the snake so that the snakes
+    /// have different colors.
+    /// </summary>
+    /// <param name="i">The number used to pick a color</param>
     private Color colorChooser(int i)
     {
         if(i==0)

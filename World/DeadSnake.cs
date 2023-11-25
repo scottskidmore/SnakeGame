@@ -4,6 +4,10 @@ using System.Text.Json.Serialization;
 
 namespace World
 {
+    /// <summary>
+    /// Class for the DeadSnake object that holds the snake id
+    /// the location it died and the frames it dies on.
+    /// </summary>
 	public class DeadSnake
 	{
         public int snake { get; set; }

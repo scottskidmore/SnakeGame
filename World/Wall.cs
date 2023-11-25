@@ -4,6 +4,10 @@ using SnakeGame;
 
 namespace World
 {
+	/// <summary>
+	/// Class for the Wall object that holds the id
+	/// and the position of the wall or line of walls.
+	/// </summary>
 	public class Wall
 	{
         public int wall { get; set; }

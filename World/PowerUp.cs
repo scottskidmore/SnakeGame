@@ -4,6 +4,10 @@ using SnakeGame;
 
 namespace World
 {
+	/// <summary>
+	/// Class for the PowerUp object that holds the
+	/// id the location and a died bool.
+	/// </summary>
 	public class PowerUp
 	{
         public int power { get; set; }
