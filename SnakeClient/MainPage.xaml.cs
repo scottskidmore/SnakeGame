@@ -88,16 +88,9 @@ public partial class MainPage : ContentPage
             // Move right
             moving = "right";
         }
-        //if a moving command was entered
-        if (moving != null)
-        {
-            //string jsonString = JsonSerializer.Serialize(moving);
-            gameController.MessageEntered(moving);
-            //reset moving text
-            moving = null;
-            //disable entry until next frame
-            canMove = false;
-        }
+
+        gameController.Message = moving;
+
         //reset entry text
         entry.Text = "";
         

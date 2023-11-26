@@ -26,6 +26,10 @@ namespace GameController
         private SocketState? theServer;
         public World.World world;
 
+        private string? message;
+        [JsonPropertyName("moving")]
+        public string? Message {  set { message = (string?)value; } }
+
     
        
 
@@ -156,10 +160,12 @@ namespace GameController
             }
             //tell view to update world
             NewUpdate?.Invoke();
-            // Continue the event loop
-            // state.OnNetworkAction has not been changed, 
-            // so this same method (ReceiveMessage) 
-            // will be invoked when more data arrives
+            //if message exists send it
+            if (message != null)
+            {
+                MessageEntered();
+                
+            }
             Networking.GetData(state);
         }
 
@@ -270,13 +276,15 @@ namespace GameController
         /// Send a message to the server
         /// </summary>
         /// <param name="message"></param>
-        public void MessageEntered(string message)
+        private void MessageEntered()
         {
             if (theServer is not null)
             {
-               string s = "{\"moving\":\"" + message + "\"}";
+                string s = "{\"moving\":\"" + message + "\"}";
                 Networking.Send(theServer.TheSocket, s + "\n");
+                message = null;
             }
+           
         }
 
         public World.World GetWorld()
