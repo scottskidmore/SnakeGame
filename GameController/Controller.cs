@@ -63,13 +63,8 @@ namespace GameController
         {
             if (state.ErrorOccurred)
             {
-                if (state.ErrorMessage == null)
-                {
-                    Error?.Invoke("Error is null");
-                    return;
-                }
                 // inform the view
-                Error?.Invoke(state.ErrorMessage);
+                Error?.Invoke("Cannot connect to Server");
                 return;
             }
             theServer = state;
