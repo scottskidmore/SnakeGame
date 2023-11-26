@@ -165,8 +165,8 @@ public partial class MainPage : ContentPage
     {
         DisplayAlert("About",
       "SnakeGame solution\nArtwork by Jolie Uk and Alex Smith\nGame design by Daniel Kopta and Travis Martin\n" +
-      "Implementation by ...\n" +
-        "CS 3500 Fall 2022, University of Utah", "OK");
+      "Implementation by Austin Allen and Scott Skidmore\n" +
+        "CS 3500 Fall 2023, University of Utah", "OK");
     }
     /// <summary>
     /// Focuses the keyboard on the entry so the inputs can

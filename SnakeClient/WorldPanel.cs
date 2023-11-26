@@ -143,7 +143,7 @@ public class WorldPanel : IDrawable
     private void PowerupDrawer(object o, ICanvas canvas)
     {
         PowerUp p = o as PowerUp;
-        int width = 20;
+        int width = 16;
         
             
         
@@ -155,7 +155,7 @@ public class WorldPanel : IDrawable
         canvas.FillEllipse(-(width / 2), -(width / 2), width, width);
 
         canvas.FillColor = Colors.Orange;
-        width = 10;
+        width = 8;
 
         canvas.FillEllipse(-(width / 2), -(width / 2), width, width);
     }
@@ -212,8 +212,8 @@ public class WorldPanel : IDrawable
         //if player does not exist go to center
 
 
-        float playerX = 100;
-        float playerY = 100;
+        float playerX = 0;
+        float playerY = 0;
 
 
 
@@ -356,6 +356,7 @@ public class WorldPanel : IDrawable
             }
             
             DrawObjectWithTransform(canvas, " Current Largest Snake: " + topScoreName + " Score: " + topScore, playerX - 500, playerY - 925, 0, ScoreDrawer);
+
 
 
         }
