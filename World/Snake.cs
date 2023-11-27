@@ -10,15 +10,15 @@ namespace World
 	/// </summary>
 	public class Snake
 	{
-		public int snake { get; set; }
-        public string name { get; set; }
+		public int snake { get; }
+        public string name { get; }
         public int score { get; set; }
-        public List<Vector2D> body { get; set; }
-        public Vector2D dir { get; set; }
-        public bool died { get; set; }
-        public bool alive { get; set; }
-        public bool dc { get; set; }
-        public bool join { get; set; }
+        public List<Vector2D> body { get; }
+        public Vector2D dir { get; }
+        public bool died { get; }
+        public bool alive { get; }
+        public bool dc { get; }
+        public bool join { get; }
         [JsonConstructor]
         public Snake(int snake,string name,int score,List<Vector2D> body,Vector2D dir,bool died, bool alive,bool dc,bool join)
 		{

@@ -10,9 +10,9 @@ namespace World
 	/// </summary>
 	public class PowerUp
 	{
-        public int power { get; set; }
-        public Vector2D loc { get; set; }
-        public bool died { get; set; }
+        public int power { get; }
+        public Vector2D loc { get; }
+        public bool died { get; }
         [JsonConstructor]
         public PowerUp(int power,Vector2D loc,bool died)
 		{
