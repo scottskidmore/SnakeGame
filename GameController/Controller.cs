@@ -101,7 +101,7 @@ namespace GameController
            
             
             
-
+            CleanUp();
             string data = state.GetData();
             string[] list = Regex.Split(data, @"(?<=[\n])");
             lock (world)
@@ -121,15 +121,6 @@ namespace GameController
                         // Then remove it from the SocketState's growable buffer
                         state.RemoveData(0, s.Length);
                         JsonDocument doc = JsonDocument.Parse(s);
-                        if (doc.RootElement.TryGetProperty("wall", out _))
-                        {
-
-
-
-                            Wall? wall = JsonSerializer.Deserialize<Wall>(s);
-                            if (!world.Walls.Contains(wall))
-                                world.Walls.Add(wall);
-                        }
                         if (doc.RootElement.TryGetProperty("power", out _))
                         {
                             PowerUp? power = JsonSerializer.Deserialize<PowerUp>(s);
@@ -137,12 +128,10 @@ namespace GameController
                             {
                                 if (world.PowerUps.ContainsKey(power.power))
                                     world.PowerUps.Remove(power.power);
-                                world.PowerUps.Add(power.power,power);
+                                world.PowerUps.Add(power.power, power);
                             }
                         }
-
-
-                        if (doc.RootElement.TryGetProperty("snake", out _))
+                        else if (doc.RootElement.TryGetProperty("snake", out _))
                         {
 
 
@@ -155,6 +144,19 @@ namespace GameController
                             }
 
                         }
+                        else if (doc.RootElement.TryGetProperty("wall", out _))
+                        {
+
+
+
+                            Wall? wall = JsonSerializer.Deserialize<Wall>(s);
+                            if (!world.Walls.Contains(wall))
+                                world.Walls.Add(wall);
+                        }
+                        
+
+
+                        
                     }
                 }
             }
@@ -223,7 +225,7 @@ namespace GameController
                             if (!world.Walls.Contains(wall))
                                 world.Walls.Add(wall);
                         }
-                         if (doc.RootElement.TryGetProperty("power", out _))
+                         else if (doc.RootElement.TryGetProperty("power", out _))
                         {
                             PowerUp? power = JsonSerializer.Deserialize<PowerUp>(s);
                             if (power != null)
@@ -236,7 +238,7 @@ namespace GameController
 
 
 
-                        if (doc.RootElement.TryGetProperty("snake", out _))
+                        else if (doc.RootElement.TryGetProperty("snake", out _))
                         {
 
 
@@ -256,7 +258,7 @@ namespace GameController
                     //tell view to update world
                     NewUpdate?.Invoke();
 
-                    //switch to normal recieve
+                    //switch to normal receive
                     state.OnNetworkAction = ReceiveData;
                     Networking.GetData(state);
 
@@ -292,7 +294,7 @@ namespace GameController
             return world;
         }
 
-        public void CleanUp()
+        private void CleanUp()
         {
             lock (world)
             {

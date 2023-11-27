@@ -10,9 +10,9 @@ namespace SnakeGame;
 /// </summary>
 public partial class MainPage : ContentPage
 {
-    Controller gameController = new();
-    private string moving;
-    private bool canMove = false;
+    private Controller gameController = new();
+   
+    
     /// <summary>
     /// Constructor that initializes the images, preps the error
     /// handler and gets the current world.
@@ -59,15 +59,10 @@ public partial class MainPage : ContentPage
     {
         Entry entry = (Entry)sender;
         String text = entry.Text.ToLower();
+        string moving = null;
 
-        if (canMove == false) 
-        {
-            entry.Text = "";
-            return;
 
-        }
 
-        
         if (text == "w")
         {
             // Move up
@@ -89,7 +84,11 @@ public partial class MainPage : ContentPage
             moving = "right";
         }
 
-        gameController.Message = moving;
+        if(moving!=null)
+        {
+            gameController.Message = moving;
+        }
+        
 
         //reset entry text
         entry.Text = "";
@@ -133,11 +132,8 @@ public partial class MainPage : ContentPage
     /// </summary>
     public void OnFrame()
     {
-        //reenable controls
-        canMove = true;
-        Dispatcher.Dispatch(() => graphicsView.Invalidate());
-        gameController.CleanUp();
         
+        Dispatcher.Dispatch(() => graphicsView.Invalidate());
     }
     /// <summary>
     /// Shows a window explaining the controls
