@@ -177,8 +177,13 @@ namespace GameController
                 {
 
                     if (world.Snakes.TryGetValue(ds.snake, out Snake? s))
+                    {
                         if (s.alive == true || s.dc == true)
                             world.DeadSnakes.Remove(s.snake);
+                        else ds.framesDead += 1;
+
+                    }
+
                 }
             }
             //tell view to update world

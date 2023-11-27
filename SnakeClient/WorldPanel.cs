@@ -195,7 +195,7 @@ public class WorldPanel : IDrawable
         float width = 10+(1*ds.framesDead);
         canvas.FillColor= Colors.Black;
         canvas.DrawImage(explosion, -(width / 2), -(width / 2), width, width);
-        ds.framesDead += 1;
+        
     }
     /// <summary>
     /// Method that handles drawing each frame of the game
