@@ -12,6 +12,7 @@ using System.Xml.Linq;
 
 
 using World;
+using System.Diagnostics;
 
 namespace GameController
 {
@@ -27,7 +28,6 @@ namespace GameController
         public World.World world;
 
         private string? message;
-        [JsonPropertyName("moving")]
         public string? Message {  set { message = (string?)value; } }
 
     
@@ -99,9 +99,6 @@ namespace GameController
                 return;
             }
            
-            
-            
-            
             string data = state.GetData();
             string[] list = Regex.Split(data, @"(?<=[\n])");
             lock (world)
@@ -141,8 +138,6 @@ namespace GameController
                         }
                         else if (doc.RootElement.TryGetProperty("snake", out _))
                         {
-
-
                             Snake? snake = JsonSerializer.Deserialize<Snake>(s);
                             if (snake != null)
                             {
@@ -161,25 +156,24 @@ namespace GameController
                         else if (doc.RootElement.TryGetProperty("wall", out _))
                         {
 
-
-
                             Wall? wall = JsonSerializer.Deserialize<Wall>(s);
                             if (!world.Walls.Contains(wall))
                                 world.Walls.Add(wall);
                         }
-                        
-
 
                         
                     }
                 }
+                //check each deadsnake to see if the snake is now alive or if snake DCed
                 foreach (DeadSnake ds in world.DeadSnakes.Values)
                 {
 
                     if (world.Snakes.TryGetValue(ds.snake, out Snake? s))
                     {
+                        //if it is remove it
                         if (s.alive == true || s.dc == true)
                             world.DeadSnakes.Remove(s.snake);
+                       // if not add a frame to the framecount
                         else ds.framesDead += 1;
 
                     }
@@ -216,9 +210,6 @@ namespace GameController
                 return;
             }
 
-
-
-
             string data = state.GetData();
             string[] list = Regex.Split(data, @"(?<=[\n])");
             Int32.TryParse(list[0], out int x);
@@ -244,8 +235,6 @@ namespace GameController
                         JsonDocument doc = JsonDocument.Parse(s);
                         if (doc.RootElement.TryGetProperty("wall", out _))
                         {
-
-
 
                             Wall? wall = JsonSerializer.Deserialize<Wall>(s);
                             if (!world.Walls.Contains(wall))
@@ -301,13 +290,14 @@ namespace GameController
         }
 
         /// <summary>
-        /// Send a message to the server
+        /// Send a moving/direction change message to the server 
         /// </summary>
         /// <param name="message"></param>
         private void MessageEntered()
         {
             if (theServer is not null)
             {
+                //create a json string for the moving message
                 string s = "{\"moving\":\"" + message + "\"}";
                 Networking.Send(theServer.TheSocket, s + "\n");
                 message = null;
@@ -319,9 +309,6 @@ namespace GameController
         {
             return world;
         }
-
-       
-
 
     }
 }

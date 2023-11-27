@@ -25,14 +25,10 @@ public class WorldPanel : IDrawable
     private IImage wall;
     private IImage background;
     private IImage explosion;
+
     private World.World theWorld = new();
 
-    
-
-
     public delegate void ObjectDrawer(object o, ICanvas canvas);
-
-    private GraphicsView graphicsView = new();
     private bool initializedForDrawing = false;
     /// <summary>
     /// Loads an image from the image file as an IIamge object.
@@ -100,7 +96,7 @@ public class WorldPanel : IDrawable
     /// <param name="canvas"></param>
     private void WallDrawer(object o, ICanvas canvas)
     {
-        Wall p = o as Wall;
+        
         
         canvas.DrawImage(wall, -(50/ 2), -(50/ 2), 50, 50);
 
@@ -142,21 +138,15 @@ public class WorldPanel : IDrawable
     /// <param name="canvas"></param>
     private void PowerupDrawer(object o, ICanvas canvas)
     {
-        PowerUp p = o as PowerUp;
+       
         int width = 16;
-        
-            
-        
-            canvas.FillColor = Colors.Green;
-
-        // Ellipses are drawn starting from the top-left corner.
-        // So if we want the circle centered on the powerup's location, we have to offset it
-        // by half its size to the left (-width/2) and up (-height/2)
+       
+        canvas.FillColor = Colors.Orange;
         canvas.FillEllipse(-(width / 2), -(width / 2), width, width);
 
-        canvas.FillColor = Colors.Orange;
         width = 8;
-
+        canvas.FillColor = Colors.Green;
+        
         canvas.FillEllipse(-(width / 2), -(width / 2), width, width);
     }
 
@@ -205,7 +195,7 @@ public class WorldPanel : IDrawable
     /// <param name="dirtyRect">RectF object that sets the size of the game view</param>
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
-       
+       //if the images are not loaded, load
         if (!initializedForDrawing)
             InitializeDrawing();
 
@@ -215,17 +205,6 @@ public class WorldPanel : IDrawable
         float playerX = 0;
         float playerY = 0;
 
-
-
-
-
-
-
-      
-
-       
-        
-        
 
         lock (theWorld)
         {
@@ -244,16 +223,18 @@ public class WorldPanel : IDrawable
             canvas.Translate(-playerX + (dirtyRect.Width / 2), -playerY + (dirtyRect.Height / 2));
             //draw the background
             canvas.DrawImage(background, -theWorld.WorldSize / 2, -theWorld.WorldSize / 2, theWorld.WorldSize, theWorld.WorldSize);
+            //draw the walls
             foreach (var p in theWorld.Walls)
             {
                 double drawAngle = Vector2D.AngleBetweenPoints(p.p1, p.p2);
                 int segmentSize = -50;
+                //determine the direction of wall
                 if (drawAngle == -90 || drawAngle == 0)
                 {
                     segmentSize = 50;
                 }
 
-
+                //find total wall length
                 Vector2D diff = p.p1 - p.p2;
                 double locX;
                 double locY;
@@ -289,7 +270,7 @@ public class WorldPanel : IDrawable
 
                 }
             }
-
+            //draw all powerups
             foreach (PowerUp p in theWorld.PowerUps.Values)
             {
                 DrawObjectWithTransform(canvas, p,
@@ -297,14 +278,16 @@ public class WorldPanel : IDrawable
                       PowerupDrawer);
 
             }
-
+            //reset top score 
             int topScore = 0;
-            string topScoreName = ""; 
+            string topScoreName = "";
+            //draw all snakes
             foreach (Snake s in theWorld.Snakes.Values)
             {
+                //if the snake is alive
                 if (s.alive == true)
                 {
-
+                    //pick color
                     canvas.FillColor = colorChooser(s.snake % 10);
                    
                     for (int i = 0; i < s.body.Count - 1; i++)
@@ -324,7 +307,7 @@ public class WorldPanel : IDrawable
                                                         
 
                         }
-
+                        // if body is verticle
                         if (s.body[s.body.Count - i - 1].GetX() == s.body[s.body.Count - i - 2].GetX())
                         {
                             if (Math.Abs(s.body[s.body.Count - i - 1].GetY() - s.body[s.body.Count - i - 2].GetY()) < theWorld.WorldSize)
@@ -332,6 +315,7 @@ public class WorldPanel : IDrawable
                                 DrawObjectWithTransform(canvas, Math.Abs(s.body[s.body.Count - i - 1].GetY() - s.body[s.body.Count - i - 2].GetY()), s.body[s.body.Count - i - 2].X, s.body[s.body.Count - i - 2].Y, Vector2D.AngleBetweenPoints(s.body[s.body.Count - i - 1], s.body[s.body.Count - i - 2]), SnakeSegmentDrawer);
                             }
                         }
+                        //if body is horizontal 
                         if (s.body[s.body.Count - i - 1].GetY() == s.body[s.body.Count - i - 2].GetY())
                         {
                             if (Math.Abs(s.body[s.body.Count - i - 1].GetX() - s.body[s.body.Count - i - 2].GetX()) < theWorld.WorldSize)
@@ -340,6 +324,7 @@ public class WorldPanel : IDrawable
                             }
                         }
                     }
+                    //if the snake score is larger than current top score, replace
                     if (s.score > topScore)
                     {
                         topScore = s.score;
@@ -349,8 +334,10 @@ public class WorldPanel : IDrawable
                     
                     
                 }
+                //if snake is not alive
                 else
                 {
+                    //check if snake is a dead snake and draw for only 60 frames
                     theWorld.DeadSnakes.TryGetValue(s.snake, out DeadSnake ds);
                     if (ds != null)
                     {
@@ -360,7 +347,7 @@ public class WorldPanel : IDrawable
                 }
                 
             }
-            
+            //draw the current largest snake at top of screen
             DrawObjectWithTransform(canvas, " Current Largest Snake: " + topScoreName + " Score: " + topScore, playerX - 500, playerY - 925, 0, ScoreDrawer);
 
 
