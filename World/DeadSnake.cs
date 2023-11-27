@@ -11,7 +11,7 @@ namespace World
 	public class DeadSnake
 	{
         public int snake { get; set; }
-        public int framesDead;
+        public int framesDead{ get; set; }
         public Vector2D loc { get; set; }
        
         [JsonConstructor]
