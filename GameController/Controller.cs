@@ -101,7 +101,7 @@ namespace GameController
            
             
             
-            CleanUp();
+            
             string data = state.GetData();
             string[] list = Regex.Split(data, @"(?<=[\n])");
             lock (world)
@@ -126,9 +126,17 @@ namespace GameController
                             PowerUp? power = JsonSerializer.Deserialize<PowerUp>(s);
                             if (power != null)
                             {
-                                if (world.PowerUps.ContainsKey(power.power))
+                                if (power.died == true)
                                     world.PowerUps.Remove(power.power);
-                                world.PowerUps.Add(power.power, power);
+
+                                else if (world.PowerUps.ContainsKey(power.power))
+                                {
+                                    world.PowerUps.Remove(power.power);
+                                    world.PowerUps.Add(power.power, power);
+
+                                }
+                                else world.PowerUps.Add(power.power, power);
+
                             }
                         }
                         else if (doc.RootElement.TryGetProperty("snake", out _))
@@ -138,9 +146,15 @@ namespace GameController
                             Snake? snake = JsonSerializer.Deserialize<Snake>(s);
                             if (snake != null)
                             {
+                               
                                 if (world.Snakes.ContainsKey(snake.snake))
                                     world.Snakes.Remove(snake.snake);
                                 world.Snakes.Add(snake.snake, snake);
+                                if (snake.died == true && !world.DeadSnakes.ContainsKey(snake.snake))
+                                {
+                                    DeadSnake ds = new DeadSnake(snake.snake, snake.body[snake.body.Count - 1]);
+                                    world.DeadSnakes.Add(snake.snake, ds);
+                                }
                             }
 
                         }
@@ -158,6 +172,13 @@ namespace GameController
 
                         
                     }
+                }
+                foreach (DeadSnake ds in world.DeadSnakes.Values)
+                {
+
+                    if (world.Snakes.TryGetValue(ds.snake, out Snake? s))
+                        if (s.alive == true || s.dc == true)
+                            world.DeadSnakes.Remove(s.snake);
                 }
             }
             //tell view to update world
@@ -294,33 +315,7 @@ namespace GameController
             return world;
         }
 
-        private void CleanUp()
-        {
-            lock (world)
-            {
-                foreach (PowerUp p in world.PowerUps.Values)
-                {
-                    if (p.died == true)
-                        world.PowerUps.Remove(p.power);
-                }
-                foreach (Snake s in world.Snakes.Values)
-                {
-                    if (s.died == true && !world.DeadSnakes.ContainsKey(s.snake))
-                    {
-                        DeadSnake ds = new DeadSnake(s.snake, s.body[s.body.Count - 1]);
-                        world.DeadSnakes.Add(s.snake, ds);
-                    }
-
-                }
-                foreach (DeadSnake ds in world.DeadSnakes.Values)
-                {
-
-                    if (world.Snakes.TryGetValue(ds.snake, out Snake? s))
-                        if (s.alive == true || s.dc == true)
-                            world.DeadSnakes.Remove(s.snake);
-                }
-            }
-        }
+       
 
 
     }
