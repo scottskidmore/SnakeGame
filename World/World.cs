@@ -8,13 +8,13 @@ namespace World
 	/// </summary>
 	public class World
 	{
-		public Dictionary<int,Snake> Snakes;
-		public List<Wall?> Walls;
-		public Dictionary<int,PowerUp> PowerUps;
-        public Dictionary<int,DeadSnake> DeadSnakes;
-        public int PlayerID;
-		public int WorldSize;
-		public World()
+		public Dictionary<int,Snake> Snakes{ get; }
+		public List<Wall?> Walls { get; }
+        public Dictionary<int,PowerUp> PowerUps { get; }
+        public Dictionary<int,DeadSnake> DeadSnakes { get; }
+        public int PlayerID { get; set; }
+        public int WorldSize { get; set; }
+        public World()
 		{
 
 			Snakes = new Dictionary<int,Snake>();

@@ -10,9 +10,9 @@ namespace World
     /// </summary>
 	public class DeadSnake
 	{
-        public int snake { get; set; }
-        public int framesDead{ get; set; }
-        public Vector2D loc { get; set; }
+        public int snake { get; }
+        public int framesDead;
+        public Vector2D loc { get; }
        
         [JsonConstructor]
         public DeadSnake(int snake, Vector2D loc)

@@ -217,31 +217,33 @@ public class WorldPanel : IDrawable
 
 
 
-        //if player exists
-        if (theWorld.Snakes.TryGetValue(theWorld.PlayerID, out Snake player))
-
-        {
-            //player location
-            playerX = (float)player.body[player.body.Count - 1].X;
-            playerY = (float)player.body[player.body.Count - 1].Y;
-
-        }
 
 
 
-        canvas.ResetState();
 
-        canvas.Translate(-playerX + (dirtyRect.Width / 2), -playerY + (dirtyRect.Height / 2));
-        canvas.DrawImage(background, -theWorld.WorldSize / 2, -theWorld.WorldSize / 2, theWorld.WorldSize, theWorld.WorldSize);
+      
 
-        // undo previous transformations from last frame
+       
         
-        // center the view on the middle of the world
+        
 
-        // example code for how to draw
-        // (the image is not visible in the starter code)
         lock (theWorld)
         {
+            //if player exists
+            if (theWorld.Snakes.TryGetValue(theWorld.PlayerID, out Snake player))
+
+            {
+                //player location
+                playerX = (float)player.body[player.body.Count - 1].X;
+                playerY = (float)player.body[player.body.Count - 1].Y;
+
+            }
+            // undo previous transformations from last frame
+            canvas.ResetState();
+            // center the view on the middle of the world
+            canvas.Translate(-playerX + (dirtyRect.Width / 2), -playerY + (dirtyRect.Height / 2));
+            //draw the background
+            canvas.DrawImage(background, -theWorld.WorldSize / 2, -theWorld.WorldSize / 2, theWorld.WorldSize, theWorld.WorldSize);
             foreach (var p in theWorld.Walls)
             {
                 double drawAngle = Vector2D.AngleBetweenPoints(p.p1, p.p2);
@@ -392,11 +394,11 @@ public class WorldPanel : IDrawable
         }
         else if (i == 3)
         {
-            return Colors.Honeydew;
+            return Colors.Purple;
         }
         else if (i == 4)
         {
-            return Colors.Yellow;
+            return Colors.Magenta;
         }
         else if (i == 5)
         {
@@ -408,7 +410,7 @@ public class WorldPanel : IDrawable
         }
         else if (i == 7)
         {
-            return Colors.Lavender;
+            return Colors.Maroon;
         }
         else if (i == 8)
         {
