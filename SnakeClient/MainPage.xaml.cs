@@ -84,6 +84,7 @@ public partial class MainPage : ContentPage
             moving = "right";
         }
 
+        //if there was a command send it to the controller
         if(moving!=null)
         {
             gameController.Message = moving;
@@ -123,7 +124,7 @@ public partial class MainPage : ContentPage
         
         //Send info to game controller
         gameController.Connect(serverText.Text, nameText.Text);
-        //what does this do?
+        
         keyboardHack.Focus();
     }
 
