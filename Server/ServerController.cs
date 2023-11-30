@@ -10,9 +10,13 @@ namespace Server
 {
 	public class ServerController
 	{
+        // A map of clients that are connected, each with an ID
+        private Dictionary<long, SocketState> clients ;
+
         static void Main(string[] args)
         {
-            Networking.StartServer(AcceptConnection, 11000);
+            ServerController server = new ServerController();
+            server.StartServer();
             XmlReader reader = XmlNodeReader.Create("/Users/scottskidmore/game-dreamweavers_game/settings.xml");
             string wantedNodeContents = string.Empty;
             int time=0;
@@ -81,10 +85,44 @@ namespace Server
                     //update the world
             }
         }
-
-        public static void AcceptConnection(SocketState state)
+        /// <summary>
+        /// Initialized the server's state
+        /// </summary>
+        public ServerController()
         {
-            //add the client to a dictionary call get data
+            clients = new Dictionary<long, SocketState>();
+        }
+
+        /// <summary>
+        /// Start accepting Tcp sockets connections from clients
+        /// </summary>
+        public void StartServer()
+        {
+            // This begins an "event loop"
+            Networking.StartServer(AcceptConnection, 11000);
+
+            Console.WriteLine("Server is running");
+        }
+
+
+        public void AcceptConnection(SocketState state)
+        {
+            if (state.ErrorOccurred)
+                return;
+
+            // Save the client state
+            // Need to lock here because clients can disconnect at any time
+            lock (clients)
+            {
+                clients[state.ID] = state;
+            }
+
+            // change the state's network action to the 
+            // receive handler so we can process data when something
+            // happens on the network
+            
+
+            Networking.GetData(state);
         }
 
         public static void HandleClientCommand(SocketState state)
