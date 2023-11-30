@@ -33,6 +33,20 @@ namespace World
 			this.join = join;
 
 		}
-	}
+        public Snake(int snake, string name)
+		{
+            this.snake = snake;
+            this.name = name;
+            this.score = 0;
+            this.body = new List<Vector2D> ();
+            this.dir = new Vector2D();
+            this.died = false;
+            this.alive = false;
+            this.dc = false;
+            this.join = true;
+
+        }
+
+    }
 }
 

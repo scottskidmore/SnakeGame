@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Reflection.PortableExecutable;
 using System.Runtime.Serialization;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
@@ -117,12 +118,7 @@ namespace Server
             if (state.ErrorOccurred)
                 return;
 
-            // Save the client state
-            // Need to lock here because clients can disconnect at any time
-            lock (clients)
-            {
-                clients[state.ID] = state;
-            }
+           
 
             // change the state's network action to the 
             // receive handler so we can process data when something
@@ -145,8 +141,28 @@ namespace Server
                 RemoveClient(state.ID);
                 return;
             }
+            //recieve name
+            
+            string name = state.GetData();
 
-            ProcessMessage(state);
+            //create snake
+            World.Snake newSnake = new World.Snake((int)state.ID, name);
+            world.Snakes.Add(newSnake.snake, newSnake);
+            //send world data
+            Networking.Send(state.TheSocket!, newSnake.snake + "");
+            Networking.Send(state.TheSocket!, worldSize + "");
+            string WallJson = JsonSerializer.Serialize(world.Walls);
+            Networking.Send(state.TheSocket!, WallJson);
+
+
+            // Save the client state
+            // Need to lock here because clients can disconnect at any time
+            lock (clients)
+            {
+                clients[state.ID] = state;
+            }
+
+            state.OnNetworkAction = ProcessMessage;
             // Continue the event loop that receives messages from this client
             Networking.GetData(state);
         }
