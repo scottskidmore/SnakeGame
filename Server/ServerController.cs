@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Reflection.PortableExecutable;
+using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
@@ -61,17 +62,16 @@ namespace Server
                 }
                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "Wall")
                 {
-                    XmlRootAttribute xRoot = new XmlRootAttribute();
-                    xRoot.ElementName = "Wall";
-                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(World.Wall), xRoot);
-                    World.Wall? loadedObjectXml = xmlSerializer.Deserialize(reader.ReadSubtree()) as World.Wall;
-                    if (loadedObjectXml != null)
+                    DataContractSerializer ser = new(typeof(World.Wall));
+                    World.Wall? w = (World.Wall?)ser.ReadObject(reader);
+                    if (w != null)
                     {
-                        world.Walls.Add(loadedObjectXml);
+                        world.Walls.Add(w);
                     }
 
+
                 }
-                
+
             }
             while (true)
             {
