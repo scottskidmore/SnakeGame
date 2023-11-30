@@ -12,6 +12,10 @@ namespace Server
 {
 	public class ServerController
 	{
+        private int time;
+        private int respawnRate;
+        private int worldSize;
+        private World.World world;
         // A map of clients that are connected, each with an ID
         private Dictionary<long, SocketState> clients ;
 
@@ -19,12 +23,27 @@ namespace Server
         {
             ServerController server = new ServerController();
             server.StartServer();
+            
+        }
+        /// <summary>
+        /// Initialized the server's state
+        /// </summary>
+        public ServerController()
+        {
+            clients = new Dictionary<long, SocketState>();
+            time = 0;
+            respawnRate = 0;
+            world = new();
+
+        }
+
+        /// <summary>
+        /// Start accepting Tcp sockets connections from clients
+        /// </summary>
+        public void StartServer()
+        {
+            // This begins an "event loop"
             XmlReader reader = XmlNodeReader.Create("/Users/scottskidmore/game-dreamweavers_game/settings.xml");
-            string wantedNodeContents = string.Empty;
-            int time=0;
-            int respawnRate = 0;
-            int worldSize = 0;
-            World.World world = new();
             reader.ReadToDescendant("GameSettings");
             while (reader.Read())
             {
@@ -32,9 +51,10 @@ namespace Server
                 {
                     XmlRootAttribute xRoot = new XmlRootAttribute();
                     xRoot.ElementName = "MSPerFrame";
-                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(int),xRoot);
+                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(int), xRoot);
                     int? loadedObjectXml = xmlSerializer.Deserialize(reader.ReadSubtree()) as int?;
-                    if (loadedObjectXml != null) {
+                    if (loadedObjectXml != null)
+                    {
                         time = (int)loadedObjectXml;
                     }
                 }
@@ -73,36 +93,22 @@ namespace Server
                 }
 
             }
+            Networking.StartServer(AcceptConnection, 11000);
+
+            Console.WriteLine("Server is running");
             while (true)
             {
-               
+
                 Stopwatch watch = new Stopwatch();
                 //while (watch.ElapsedMilliseconds < time)
                 //{
 
                 //}
                 //watch.Restart();
-               // Update();
-                    //update the world
+                // Update();
+                //update the world
             }
-        }
-        /// <summary>
-        /// Initialized the server's state
-        /// </summary>
-        public ServerController()
-        {
-            clients = new Dictionary<long, SocketState>();
-        }
-
-        /// <summary>
-        /// Start accepting Tcp sockets connections from clients
-        /// </summary>
-        public void StartServer()
-        {
-            // This begins an "event loop"
-            Networking.StartServer(AcceptConnection, 11000);
-
-            Console.WriteLine("Server is running");
+            
         }
 
 
