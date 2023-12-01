@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 using NetworkUtil;
+using World;
 
 namespace Server
 {
@@ -44,7 +45,7 @@ namespace Server
         public void StartServer()
         {
             // This begins an "event loop"
-            XmlReader reader = XmlNodeReader.Create("/Users/scottskidmore/game-dreamweavers_game/settings.xml");
+            XmlReader reader = XmlNodeReader.Create("settings.xml");
             reader.ReadToDescendant("GameSettings");
             while (reader.Read())
             {
@@ -149,10 +150,9 @@ namespace Server
             World.Snake newSnake = new World.Snake((int)state.ID, name);
             world.Snakes.Add(newSnake.snake, newSnake);
             //send world data
-            Networking.Send(state.TheSocket!, newSnake.snake + "");
-            Networking.Send(state.TheSocket!, worldSize + "");
-            string WallJson = JsonSerializer.Serialize(world.Walls);
-            Networking.Send(state.TheSocket!, WallJson);
+            
+            Networking.Send(state.TheSocket!, newSnake.snake + "\n" + worldSize + "\n" + JsonSerializer.Serialize(world.Walls)+ "\n");
+           
 
 
             // Save the client state
@@ -161,18 +161,13 @@ namespace Server
             {
                 clients[state.ID] = state;
             }
-
+            Console.WriteLine("accepted new client:"+ state.ID);
             state.OnNetworkAction = ProcessMessage;
             // Continue the event loop that receives messages from this client
             Networking.GetData(state);
         }
 
-        public static void HandleClientCommand(SocketState state)
-        {
-            string request = state.GetData();
-            //Handle the command from client
-           // Networking.SendAndClose(state.TheSocket, response);
-        }
+    
 
         /// <summary>
         /// Given the data that has arrived so far, 
@@ -191,6 +186,7 @@ namespace Server
             // We may have received more than one.
             foreach (string p in parts)
             {
+
                 // Ignore empty strings added by the regex splitter
                 if (p.Length == 0)
                     continue;
@@ -207,6 +203,28 @@ namespace Server
                 //if we recieved a json moving
                 if (p.StartsWith("{"))
                 {
+                    JsonDocument doc = JsonDocument.Parse(p);
+                    string? s = JsonSerializer.Deserialize<String?>(p);
+                    if (s != null)
+                    {
+                        if (s.Contains("up"))
+                        {
+                            world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(0,-1);
+                        }
+                        else if (s.Contains("down"))
+                        {
+                            world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(0, 1);
+                        }
+                        else if (s.Contains("right"))
+                        {
+                            world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(1, 0);
+                        }
+                        else if (s.Contains("left"))
+                        {
+                            world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(-1, 0);
+                        }
+                    }
+
 
                 }
 
