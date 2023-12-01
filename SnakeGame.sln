@@ -13,11 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "World", "World\World.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetworkController", "NetworkController\NetworkController.csproj", "{58C463BF-669D-4A5C-A751-BAEEEE5E0C75}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DA02E03C-6FC3-458A-85D6-FBF1635DA9FA}"
-	ProjectSection(SolutionItems) = preProject
-		settings.xml = settings.xml
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Server\Server.csproj", "{6633BE97-FF45-48C2-A9BE-2CCA0EC76D23}"
 EndProject
 Global

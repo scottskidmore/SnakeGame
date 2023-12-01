@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 using NetworkUtil;
+using SnakeGame;
 using World;
 
 namespace Server
@@ -102,18 +103,151 @@ namespace Server
             {
 
                 Stopwatch watch = new Stopwatch();
-                //while (watch.ElapsedMilliseconds < time)
-                //{
-
-                //}
-                //watch.Restart();
-                // Update();
+                watch.Start();
+                while (watch.ElapsedMilliseconds < time)
+                {
+                    
+                }
+                watch.Restart();
+                Update();
                 //update the world
             }
             
         }
 
+        private void Update()
+        {
+            foreach (SocketState client in clients.Values)
+            {
+                if (world.Snakes.TryGetValue((int)client.ID,out Snake? snake)){
+                    if (snake.join)
+                    {
+                        world.Snakes.Remove((int)client.ID);
+                        Snake newSnake = NewSnakeMaker((int)client.ID, snake.name);
+;                       world.Snakes.Add((int)client.ID,newSnake);
+                    }
+                }
+            }
+            foreach (SocketState client in clients.Values)
+            {
+                
+                foreach (Snake sendSnake in world.Snakes.Values)
+                {
+                    Networking.Send(client.TheSocket, JsonSerializer.Serialize(sendSnake)+"\n");
+                }
+                foreach (PowerUp powerUp in world.PowerUps.Values)
+                {
+                    Networking.Send(client.TheSocket, JsonSerializer.Serialize(powerUp));
+                }
+            }
+        }
+        private Snake NewSnakeMaker(int id,string name)
+        {
+            Vector2D startPoint = ValidSpawnPoint();
+            Random rnd = new Random();
+            int x = rnd.Next(0, 3);
+            Vector2D dir;
+            Vector2D endPoint;
+            
+                dir = new Vector2D(0, 1);
+            endPoint = new Vector2D(startPoint.GetX(), startPoint.GetY() - 120);
+            
+            if (x == 1)
+            {
+                dir = new Vector2D(0, -1);
+                endPoint = new Vector2D(startPoint.GetX(), startPoint.GetY() + 120);
+            }
+            if (x == 2)
+            {
+                dir = new Vector2D(1, 0);
+                endPoint = new Vector2D(startPoint.GetX()-120, startPoint.GetY());
+            }
+            if (x == 3)
+            {
+                dir = new Vector2D(-1, 0);
+                endPoint = new Vector2D(startPoint.GetX()+120, startPoint.GetY());
+            }
+            List<Vector2D> list = new List<Vector2D>() { startPoint, endPoint };
+            return new Snake(id,name,0,list,dir,false,true,false,false);
+        }
+        private Vector2D ValidSpawnPoint()
+        {
+            while (true)
+            {
+                bool valid = true;
+                Random rnd = new Random();
+                int x = rnd.Next(-worldSize/2, worldSize/2);
+                int y = rnd.Next(-worldSize / 2, worldSize / 2);
+                foreach(Wall? wall in world.Walls)
+                {
+                    if (wall != null)
+                    {
+                        if (wall.p1.GetX() == wall.p2.GetX())
+                        {
+                            if(wall.p1.GetY() > wall.p2.GetY())
+                            {
+                                if(y< wall.p1.GetY()|| y > wall.p2.GetY())
+                                {
+                                    if (x <= 25 + 120 + wall.p2.GetX())
+                                    {
+                                        valid = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (wall.p1.GetX() == wall.p2.GetX())
+                        {
+                            if (wall.p1.GetY() <wall.p2.GetY())
+                            {
+                                if (y < wall.p2.GetY() || y > wall.p1.GetY())
+                                {
+                                    if (x <= 25 + 120 + wall.p2.GetX())
+                                    {
+                                        valid = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (wall.p1.GetY() == wall.p2.GetY())
+                        {
+                            if (wall.p1.GetX() > wall.p2.GetX())
+                            {
+                                if (y < wall.p1.GetX() || y > wall.p2.GetX())
+                                {
+                                    if (x <= 25 + 120 + wall.p2.GetY())
+                                    {
+                                        valid = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (wall.p1.GetY() == wall.p2.GetY())
+                        {
+                            if (wall.p1.GetX() < wall.p2.GetX())
+                            {
+                                if (y < wall.p2.GetX() || y > wall.p1.GetX())
+                                {
+                                    if (x <= 25 + 120 + wall.p2.GetY())
+                                    {
+                                        valid = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (valid == true)
+                {
+                    return new Vector2D(x, y);
+                }
 
+            }
+
+        }
         public void AcceptConnection(SocketState state)
         {
             if (state.ErrorOccurred)
@@ -147,12 +281,19 @@ namespace Server
             string name = state.GetData();
 
             //create snake
-            World.Snake newSnake = new World.Snake((int)state.ID, name);
+            Snake newSnake = new Snake((int)state.ID, name);
             world.Snakes.Add(newSnake.snake, newSnake);
             //send world data
-            
-            Networking.Send(state.TheSocket!, newSnake.snake + "\n" + worldSize + "\n" + JsonSerializer.Serialize(world.Walls)+ "\n");
-           
+            string walls = "";
+            foreach(Wall? wall in world.Walls)
+            {
+               if(wall != null)
+                {
+                    walls=walls+JsonSerializer.Serialize(wall) + "\n";
+                }
+            }
+            Networking.Send(state.TheSocket, newSnake.snake + "\n" + worldSize + "\n"+walls);
+
 
 
             // Save the client state
