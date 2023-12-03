@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Linq;
 using System.Reflection.PortableExecutable;
 using System.Runtime.Serialization;
 using System.Text.Json;
@@ -10,6 +11,7 @@ using System.Xml.Serialization;
 using NetworkUtil;
 using SnakeGame;
 using World;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Server
 {
@@ -17,6 +19,7 @@ namespace Server
 	{
         private int time;
         private int respawnRate;
+        private int snakeSpeed;
         private int worldSize;
         private World.World world;
         // A map of clients that are connected, each with an ID
@@ -36,6 +39,7 @@ namespace Server
             clients = new Dictionary<long, SocketState>();
             time = 0;
             respawnRate = 0;
+            snakeSpeed = 6;
             world = new();
 
         }
@@ -119,13 +123,19 @@ namespace Server
         {
             foreach (SocketState client in clients.Values)
             {
-                if (world.Snakes.TryGetValue((int)client.ID,out Snake? snake)){
+                if (world.Snakes.TryGetValue((int)client.ID, out Snake? snake))
+                {
                     if (snake.join)
                     {
                         world.Snakes.Remove((int)client.ID);
                         Snake newSnake = NewSnakeMaker((int)client.ID, snake.name);
-;                       world.Snakes.Add((int)client.ID,newSnake);
+                        world.Snakes.Add((int)client.ID, newSnake);
                     }
+
+                }
+                if (world.Snakes.TryGetValue((int)client.ID, out Snake? snakeMove))
+                {
+                    SnakeMover(snakeMove);
                 }
             }
             foreach (SocketState client in clients.Values)
@@ -167,7 +177,7 @@ namespace Server
                 dir = new Vector2D(-1, 0);
                 endPoint = new Vector2D(startPoint.GetX()+120, startPoint.GetY());
             }
-            List<Vector2D> list = new List<Vector2D>() { startPoint, endPoint };
+            List<Vector2D> list = new List<Vector2D>() { endPoint, startPoint };
             return new Snake(id,name,0,list,dir,false,true,false,false);
         }
         private Vector2D ValidSpawnPoint()
@@ -248,6 +258,51 @@ namespace Server
             }
 
         }
+        private void SnakeMover (Snake s)
+        {
+            double headMoveX = s.dir.GetX();
+            double headMoveY = s.dir.GetY();
+
+            Vector2D head = s.body.Last<Vector2D>();
+            Vector2D newHead = new Vector2D(head.GetX()+(headMoveX * snakeSpeed),head.GetY() + (headMoveY * snakeSpeed));
+            
+            Vector2D tail = s.body.First<Vector2D>();
+            double newTailX = tail.GetX();
+            double newTailY = tail.GetY();
+            if (tail.GetX() == s.body[1].GetX())
+            {
+                if (tail.GetY() < s.body[1].GetY())
+                {
+                    newTailY = tail.GetY() + snakeSpeed;
+                }
+                else if (tail.GetY() > s.body[1].GetY() )
+                {
+                    newTailY = tail.GetY() - snakeSpeed;
+                }
+                else s.body.Remove(tail);
+
+            }
+            else if (tail.GetY() == s.body[1].GetY())
+            {
+                if (tail.GetX() < s.body[1].GetX())
+                {
+                    newTailX = tail.GetX() + snakeSpeed;
+                }
+                else if (tail.GetX() > s.body[1].GetX())
+                {
+                    newTailX = tail.GetX() - snakeSpeed;
+                }
+                else s.body.Remove(tail);
+
+            }
+            Vector2D newTail = new Vector2D(newTailX, newTailY);
+           
+            
+            s.body[0] = newTail;
+            s.body[s.body.Count - 1] = newHead;
+            
+
+        }
         public void AcceptConnection(SocketState state)
         {
             if (state.ErrorOccurred)
@@ -282,6 +337,7 @@ namespace Server
 
             //create snake
             Snake newSnake = new Snake((int)state.ID, name);
+            state.RemoveData(0, name.Length);
             world.Snakes.Add(newSnake.snake, newSnake);
             //send world data
             string walls = "";
@@ -345,46 +401,37 @@ namespace Server
                 if (p.StartsWith("{"))
                 {
                     JsonDocument doc = JsonDocument.Parse(p);
-                    string? s = JsonSerializer.Deserialize<String?>(p);
-                    if (s != null)
+                    
+                    if (p != null)
                     {
-                        if (s.Contains("up"))
+                        if (p.Contains("up")&&world.Snakes[(int)state.ID].dir.GetY()==0)
                         {
                             world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(0,-1);
+                            world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count-1]);
                         }
-                        else if (s.Contains("down"))
+                        else if (p.Contains("down") && world.Snakes[(int)state.ID].dir.GetY() == 0)
                         {
                             world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(0, 1);
+                            world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
                         }
-                        else if (s.Contains("right"))
+                        else if (p.Contains("right") && world.Snakes[(int)state.ID].dir.GetX() == 0)
                         {
                             world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(1, 0);
+                            world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
                         }
-                        else if (s.Contains("left"))
+                        else if (p.Contains("left") && world.Snakes[(int)state.ID].dir.GetX() == 0)
                         {
                             world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(-1, 0);
+                            world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
                         }
                     }
 
 
                 }
 
-                // Broadcast the message to all clients
-                // Lock here beccause we can't have new connections 
-                // adding while looping through the clients list.
-                // We also need to remove any disconnected clients.
-                HashSet<long> disconnectedClients = new HashSet<long>();
-                lock (clients)
-                {
-                    foreach (SocketState client in clients.Values)
-                    {
-                        if (!Networking.Send(client.TheSocket!, "Message from client " + state.ID + ": " + p))
-                            disconnectedClients.Add(client.ID);
-                    }
-                }
-                foreach (long id in disconnectedClients)
-                    RemoveClient(id);
+             
             }
+            Networking.GetData(state);
         }
 
 
