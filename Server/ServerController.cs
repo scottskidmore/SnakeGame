@@ -18,9 +18,12 @@ namespace Server
 	public class ServerController
 	{
         private int time;
-        private int respawnRate;
+        private int respawnRate=24;
         private int snakeSpeed;
         private int worldSize;
+        private int maxPowerups=20;
+        private int nextPowerID;
+
         private World.World world;
         // A map of clients that are connected, each with an ID
         private Dictionary<long, SocketState> clients ;
@@ -100,6 +103,13 @@ namespace Server
                 }
 
             }
+            //populate powerups
+            for (int i = 0; i<maxPowerups; i++)
+            {
+              
+                world.PowerUps.Add(i, NewPowerUpMaker(i));
+                nextPowerID++;
+            }
             Networking.StartServer(AcceptConnection, 11000);
 
             Console.WriteLine("Server is running");
@@ -121,39 +131,87 @@ namespace Server
 
         private void Update()
         {
-            foreach (SocketState client in clients.Values)
+            lock (world)
             {
-                if (world.Snakes.TryGetValue((int)client.ID, out Snake? snake))
+                foreach (PowerUp? p in world.PowerUps.Values)
                 {
-                    if (snake.join)
+                    if (p.died == true)
                     {
-                        world.Snakes.Remove((int)client.ID);
-                        Snake newSnake = NewSnakeMaker((int)client.ID, snake.name);
-                        world.Snakes.Add((int)client.ID, newSnake);
+                        //advance timer by 1
+                        p.deathTimer++;
+                        if (p.deathTimer >= respawnRate)
+                        {
+                            world.PowerUps.Remove(p.power);
+                           
+                        }
+
+                    }
+                }
+                while(world.PowerUps.Count < maxPowerups)
+                {
+                    PowerUp newPower = NewPowerUpMaker(nextPowerID);
+                    world.PowerUps.Add(newPower.power, newPower);
+                    nextPowerID++;
+                }
+
+                foreach (SocketState client in clients.Values)
+                {
+                    if (world.Snakes.TryGetValue((int)client.ID, out Snake? snake))
+                    {
+                        if (snake.join)
+                        {
+                            world.Snakes.Remove((int)client.ID);
+                            Snake newSnake = NewSnakeMaker((int)client.ID, snake.name);
+                            world.Snakes.Add((int)client.ID, newSnake);
+                        }
+
+                    }
+                    //respawn snake  
+                    if (world.Snakes.TryGetValue((int)client.ID, out Snake? deadSnake))
+                    {
+                        if (deadSnake.died == true)
+                            deadSnake.died = false;
+                        if (deadSnake.framesDead >= respawnRate)
+                        {
+                            world.Snakes.Remove((int)client.ID);
+                            Snake newSnake = NewSnakeMaker((int)client.ID, deadSnake.name);
+                            world.Snakes.Add((int)client.ID, newSnake);
+                        }
+                    }
+                    if (world.Snakes.TryGetValue((int)client.ID, out Snake? snakeMove))
+                    {
+                        SnakeMover(snakeMove);
+                        if(snakeMove.growing == true && snakeMove.growingFrames >= 24)
+                        {
+                            snakeMove.growing = false;
+                            
+
+                        }
+
+                    }
+                    if (world.Snakes.TryGetValue((int)client.ID, out Snake? snakeCollide))
+                    {
+                        SnakeCollider(snakeCollide);
                     }
 
                 }
-                if (world.Snakes.TryGetValue((int)client.ID, out Snake? snakeMove))
+                foreach (SocketState client in clients.Values)
                 {
-                    SnakeMover(snakeMove);
-                }
-                if (world.Snakes.TryGetValue((int)client.ID, out Snake? snakeColide))
-                {
-                    SnakeColider(snakeColide);
-                }
-            }
-            foreach (SocketState client in clients.Values)
-            {
-                
-                foreach (Snake sendSnake in world.Snakes.Values)
-                {
-                    Networking.Send(client.TheSocket, JsonSerializer.Serialize(sendSnake)+"\n");
-                }
-                foreach (PowerUp powerUp in world.PowerUps.Values)
-                {
-                    Networking.Send(client.TheSocket, JsonSerializer.Serialize(powerUp));
+
+                    foreach (Snake sendSnake in world.Snakes.Values)
+                    {
+                        Networking.Send(client.TheSocket, JsonSerializer.Serialize(sendSnake) + "\n");
+                    }
+                    foreach (PowerUp powerUp in world.PowerUps.Values)
+                    {
+                        Networking.Send(client.TheSocket, JsonSerializer.Serialize(powerUp) + "\n");
+                    }
                 }
             }
+        }
+        private PowerUp NewPowerUpMaker(int nextPower)
+        {
+            return new PowerUp(nextPower, ValidSpawnPoint(), false);
         }
         private Snake NewSnakeMaker(int id,string name)
         {
@@ -190,70 +248,59 @@ namespace Server
             {
                 bool valid = true;
                 Random rnd = new Random();
-                int x = rnd.Next(-worldSize/2, worldSize/2);
-                int y = rnd.Next(-worldSize / 2, worldSize / 2);
+                double x = rnd.Next(-worldSize/2, worldSize/2);
+                double y = rnd.Next(-worldSize / 2, worldSize / 2);
+                Vector2D newPoint = new Vector2D(x,y);
+
                 foreach(Wall? wall in world.Walls)
+
                 {
-                    if (wall != null)
+                    Vector2D? diff = newPoint - wall.p2;
+                    if (wall.p1.GetX() == wall.p2.GetX())
                     {
-                        if (wall.p1.GetX() == wall.p2.GetX())
+
+
+                        if (wall.p1.GetY() < wall.p2.GetY())
                         {
-                            if(wall.p1.GetY() > wall.p2.GetY())
-                            {
-                                if(y< wall.p1.GetY()|| y > wall.p2.GetY())
+                            if (y >= wall.p1.GetY() - 25 && y <= wall.p2.GetY() + 25)
+                                if (diff.GetX() <= 35 && diff.GetX() >= -35)
                                 {
-                                    if (x <= 25 + 120 + wall.p2.GetX())
-                                    {
-                                        valid = false;
-                                        break;
-                                    }
+                                    valid = false;
+                                    break;
                                 }
-                            }
                         }
-                        if (wall.p1.GetX() == wall.p2.GetX())
-                        {
-                            if (wall.p1.GetY() <wall.p2.GetY())
-                            {
-                                if (y < wall.p2.GetY() || y > wall.p1.GetY())
+                        else if (wall.p1.GetY() > wall.p2.GetY())
+                            if (y <= wall.p1.GetY() + 25 && x >= wall.p2.GetY() - 25)
+                                if (diff.GetX() <= 35 && diff.GetX() >= -35)
                                 {
-                                    if (x <= 25 + 120 + wall.p2.GetX())
-                                    {
-                                        valid = false;
-                                        break;
-                                    }
+                                    valid = false;
+                                    break;
                                 }
-                            }
-                        }
-                        if (wall.p1.GetY() == wall.p2.GetY())
-                        {
-                            if (wall.p1.GetX() > wall.p2.GetX())
-                            {
-                                if (y < wall.p1.GetX() || y > wall.p2.GetX())
-                                {
-                                    if (x <= 25 + 120 + wall.p2.GetY())
-                                    {
-                                        valid = false;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        if (wall.p1.GetY() == wall.p2.GetY())
-                        {
-                            if (wall.p1.GetX() < wall.p2.GetX())
-                            {
-                                if (y < wall.p2.GetX() || y > wall.p1.GetX())
-                                {
-                                    if (x <= 25 + 120 + wall.p2.GetY())
-                                    {
-                                        valid = false;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
                     }
+                    //if wall is Horizontal
+                    if (wall.p1.GetY() == wall.p2.GetY())
+                    {
+                        if (wall.p1.GetX() < wall.p2.GetX())
+                        {
+                            if (x >= wall.p1.GetX() - 25 && x <= wall.p2.GetX() + 25)
+                                if (diff.GetY() <= 35 && diff.GetY() >= -35)
+                                {
+                                    valid = false;
+                                    break;
+                                }
+                        }
+
+                        else if (wall.p1.GetX() > wall.p2.GetX())
+                            if (x <= wall.p1.GetX() + 25 && x >= wall.p2.GetX() - 25)
+                                if (diff.GetY() <= 35 && diff.GetY() >= -35)
+                                {
+                                    valid = false;
+                                    break;
+                                }
+                    }
+
                 }
+                
                 if (valid == true)
                 {
                     return new Vector2D(x, y);
@@ -262,14 +309,14 @@ namespace Server
             }
 
         }
-        private void SnakeColider(Snake s)
+        private void SnakeCollider(Snake s)
         {
             Vector2D head = s.body.Last<Vector2D>();
             double wallCollisionRange = 35;
             double powerUpCollisionRange = 20;
 
 
-            //wall colisions
+            //wall collisions
 
             foreach (Wall? wall in world.Walls)
             {
@@ -288,6 +335,7 @@ namespace Server
                                 {
                                     s.alive = false;
                                     s.died = true;
+                                    s.score = 0;
                                     break;
                                 }
                         }
@@ -297,6 +345,7 @@ namespace Server
                                 {
                                     s.alive = false;
                                     s.died = true;
+                                    s.score = 0;
                                     break;
                                 }
                     }
@@ -310,6 +359,7 @@ namespace Server
                                 {
                                     s.alive = false;
                                     s.died = true;
+                                    s.score = 0;
                                     break;
                                 }
                         }
@@ -320,6 +370,7 @@ namespace Server
                                         {
                                             s.alive = false;
                                             s.died = true;
+                                            s.score = 0;
                                             break;
                                         }
                     }
@@ -330,66 +381,76 @@ namespace Server
             //collision detection for powerup
             foreach(PowerUp? p in world.PowerUps.Values)
             {
-                Vector2D diff = p.loc - head;
-                if(diff.GetX()<= powerUpCollisionRange&&diff.GetX()>= -powerUpCollisionRange&& diff.GetY() <= powerUpCollisionRange && diff.GetY() >= -powerUpCollisionRange)
+                if (p.died == false)
                 {
-                    //set to grow
-                    s.growing = true;
-                    //increase score
-                    s.score++;
-                    //set powerup to died
-                    p.died = true;
+                    Vector2D diff = p.loc - head;
+                    if (diff.GetX() <= powerUpCollisionRange && diff.GetX() >= -powerUpCollisionRange && diff.GetY() <= powerUpCollisionRange && diff.GetY() >= -powerUpCollisionRange)
+                    {
+                        //set to grow
+                        s.growing = true;
+                        s.growingFrames = 0;
+                        //increase score
+                        s.score++;
+                        //set powerup to died
+                        p.died = true;
+                        break;
+                    }
                 }
             }
 
         }
         private void SnakeMover (Snake s)
         {
-            double headMoveX = s.dir.GetX();
-            double headMoveY = s.dir.GetY();
-
-            Vector2D head = s.body.Last<Vector2D>();
-            Vector2D newHead = new Vector2D(head.GetX()+(headMoveX * snakeSpeed),head.GetY() + (headMoveY * snakeSpeed));
-            
-            Vector2D tail = s.body.First<Vector2D>();
-            double newTailX = tail.GetX();
-            double newTailY = tail.GetY();
-            if (tail.GetX() == s.body[1].GetX() && s.growing == false)
+            if (s.alive)
             {
-               
-                if (tail.GetY() < s.body[1].GetY())
+
+                double headMoveX = s.dir.GetX();
+                double headMoveY = s.dir.GetY();
+
+                Vector2D head = s.body.Last<Vector2D>();
+                Vector2D newHead = new Vector2D(head.GetX() + (headMoveX * snakeSpeed), head.GetY() + (headMoveY * snakeSpeed));
+
+                Vector2D tail = s.body.First<Vector2D>();
+                double newTailX = tail.GetX();
+                double newTailY = tail.GetY();
+                if (tail.GetX() == s.body[1].GetX() && s.growing == false)
                 {
 
-                    newTailY = tail.GetY() + snakeSpeed;
-                }
-                else if (tail.GetY() > s.body[1].GetY() )
-                {
+                    if (tail.GetY() < s.body[1].GetY())
+                    {
 
-                    newTailY = tail.GetY() - snakeSpeed;
+                        newTailY = tail.GetY() + snakeSpeed;
+                    }
+                    else if (tail.GetY() > s.body[1].GetY())
+                    {
+
+                        newTailY = tail.GetY() - snakeSpeed;
+                    }
+                    else s.body.Remove(tail);
+
                 }
-                else s.body.Remove(tail);
+                else if (tail.GetY() == s.body[1].GetY() && s.growing == false)
+                {
+                    if (tail.GetX() < s.body[1].GetX())
+                    {
+                        newTailX = tail.GetX() + snakeSpeed;
+                    }
+                    else if (tail.GetX() > s.body[1].GetX())
+                    {
+                        newTailX = tail.GetX() - snakeSpeed;
+                    }
+                    else s.body.Remove(tail);
+
+                }
+                else s.growingFrames++;
+                Vector2D newTail = new Vector2D(newTailX, newTailY);
+
+
+                s.body[0] = newTail;
+                s.body[s.body.Count - 1] = newHead;
 
             }
-            else if (tail.GetY() == s.body[1].GetY() && s.growing == false)
-            {
-                if (tail.GetX() < s.body[1].GetX())
-                {
-                    newTailX = tail.GetX() + snakeSpeed;
-                }
-                else if (tail.GetX() > s.body[1].GetX())
-                {
-                    newTailX = tail.GetX() - snakeSpeed;
-                }
-                else s.body.Remove(tail);
-
-            }
-            Vector2D newTail = new Vector2D(newTailX, newTailY);
-           
-            
-            s.body[0] = newTail;
-            s.body[s.body.Count - 1] = newHead;
-            
-
+            else { s.framesDead++; }
         }
         public void AcceptConnection(SocketState state)
         {

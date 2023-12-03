@@ -11,6 +11,8 @@ namespace World
 	public class Snake
 	{
 		public int snake { get; }
+        public int framesDead { get; set; }
+        public int growingFrames { get; set; }
         public string name { get; }
         public int score { get; set; }
         public List<Vector2D> body { get; }

@@ -13,12 +13,14 @@ namespace World
         public int power { get; }
         public Vector2D loc { get; }
         public bool died { get; set; }
+        public int deathTimer { get; set; }
         [JsonConstructor]
         public PowerUp(int power,Vector2D loc,bool died)
 		{
 			this.power = power;
 			this.loc = loc;
 			this.died = died;
+			this.deathTimer = 0;
 		}
 	}
 }
