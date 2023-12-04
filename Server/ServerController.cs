@@ -545,13 +545,17 @@ namespace Server
                     {
 
                         newTailY = tail.GetY() + snakeSpeed;
+                        if (newTailY == s.body[1].GetY())
+                            s.body.Remove(tail);
                     }
                     else if (tail.GetY() > s.body[1].GetY())
                     {
 
                         newTailY = tail.GetY() - snakeSpeed;
+                        if(newTailY == s.body[1].GetY())
+                            s.body.Remove(tail);
                     }
-                    else s.body.Remove(tail);
+                    
 
                 }
                 else if (tail.GetY() == s.body[1].GetY() && s.growing == false)
@@ -559,12 +563,16 @@ namespace Server
                     if (tail.GetX() < s.body[1].GetX())
                     {
                         newTailX = tail.GetX() + snakeSpeed;
+                        if (newTailX == s.body[1].GetX())
+                            s.body.Remove(tail);
                     }
                     else if (tail.GetX() > s.body[1].GetX())
                     {
                         newTailX = tail.GetX() - snakeSpeed;
+                        if (newTailX == s.body[1].GetX())
+                            s.body.Remove(tail);
                     }
-                    else s.body.Remove(tail);
+                   
 
                 }
                 else s.growingFrames++;
@@ -576,8 +584,8 @@ namespace Server
                 double length = 0;
                 for (int i = s.body.Count - 1; i > 0; i--)
                 {
-                    length += s.body[i].GetX() - s.body[i - 1].GetX();
-                    length += s.body[i].GetY() - s.body[i - 1].GetY();
+                    length += Math.Abs( s.body[i].GetX() - s.body[i - 1].GetX());
+                    length += Math.Abs(s.body[i].GetY() - s.body[i - 1].GetY());
                 }
                 Console.WriteLine(length);
 
