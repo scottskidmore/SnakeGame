@@ -573,7 +573,14 @@ namespace Server
 
                 s.body[0] = newTail;
                 s.body[s.body.Count - 1] = newHead;
-                
+                double length = 0;
+                for (int i = s.body.Count - 1; i > 0; i--)
+                {
+                    length += s.body[i].GetX() - s.body[i - 1].GetX();
+                    length += s.body[i].GetY() - s.body[i - 1].GetY();
+                }
+                Console.WriteLine(length);
+
             }
             else { s.framesDead++; }
         }
