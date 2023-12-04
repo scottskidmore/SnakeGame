@@ -148,16 +148,16 @@ namespace Server
                         if (p.deathTimer >= respawnRate)
                         {
                             world.PowerUps.Remove(p.power);
-                           
+
                         }
 
                     }
                 }
-                if(world.PowerUps.Count < maxPowerups)
+                if (world.PowerUps.Count < maxPowerups)
                 {
                     if (randomPowerupFrame > 0)
                         randomPowerupFrame--;
-                    else 
+                    else
                     {
                         Random rnd = new Random();
                         randomPowerupFrame = rnd.Next(0, maxPowerupFrame);
@@ -167,7 +167,7 @@ namespace Server
                         nextPowerID++;
 
                     }
-                    
+
                 }
 
                 foreach (SocketState client in clients.Values)
@@ -206,26 +206,34 @@ namespace Server
                             world.Snakes.Add((int)client.ID, newSnake);
                         }
                     }
-                    if (world.Snakes.TryGetValue((int)client.ID, out Snake? snakeCollide))
-                    {
-                        SnakeCollider(snakeCollide);
-                    }
+
                     if (world.Snakes.TryGetValue((int)client.ID, out Snake? snakeMove))
                     {
                         SnakeMover(snakeMove);
-                        if(snakeMove.growing == true && snakeMove.growingFrames >= 24)
+                        //check for snake teleportation
+                        snakeTeleporter(snakeMove);
+                        if (snakeMove.growing == true && snakeMove.growingFrames >= 24)
                         {
                             snakeMove.growing = false;
-                            
+
 
                         }
 
                     }
-                    
+                    if (world.Snakes.TryGetValue((int)client.ID, out Snake? snakeCollide))
+                    {
+                        SnakeCollider(snakeCollide);
+                    }
+
 
                 }
+
+            }
+
                 HashSet<long> disconnectedClients = new HashSet<long>();
                 string jsonToSend = "";
+            lock (world)
+            {
                 foreach (Snake sendSnake in world.Snakes.Values)
                 {
                     jsonToSend += JsonSerializer.Serialize(sendSnake) + "\n";
@@ -237,8 +245,8 @@ namespace Server
                 foreach (SocketState client in clients.Values)
                 {
 
-                    
-                    if(!Networking.Send(client.TheSocket, jsonToSend))
+
+                    if (!Networking.Send(client.TheSocket, jsonToSend))
                     {
                         world.Snakes[(int)client.ID].dc = true;
                         world.Snakes[(int)client.ID].died = true;
@@ -246,14 +254,15 @@ namespace Server
                         disconnectedClients.Add(client.ID);
 
                     }
-                        
+
 
                 }
+            }
                 foreach (long id in disconnectedClients)
                 {
                     RemoveClient(id);
                 }
-            }
+            
         }
         private PowerUp NewPowerUpMaker(int nextPower)
         {
@@ -635,6 +644,8 @@ namespace Server
                 Vector2D head = s.body.Last<Vector2D>();
                 Vector2D newHead = new Vector2D(head.GetX() + (headMoveX * snakeSpeed), head.GetY() + (headMoveY * snakeSpeed));
 
+
+
                 Vector2D tail = s.body.First<Vector2D>();
                 double newTailX = tail.GetX();
                 double newTailY = tail.GetY();
@@ -673,9 +684,83 @@ namespace Server
 
                 s.body[0] = newTail;
                 s.body[s.body.Count - 1] = newHead;
+                double length = 0;
+                for (int i = s.body.Count - 1; i > 0; i--)
+                {
+                    length += s.body[i].GetX() - s.body[i - 1].GetX();
+                    length += s.body[i].GetY() - s.body[i - 1].GetY();
+                }
+                Console.WriteLine(length);
 
             }
             else { s.framesDead++; }
+        }
+
+        private void snakeTeleporter(Snake s)
+        {
+            Vector2D head = s.body[s.body.Count - 1];
+            Vector2D tail = s.body[0];
+            
+            //if x point is off the world +
+            if (head.GetX() >= 1000)
+            {
+
+                s.body[s.body.Count - 1]= new Vector2D(1000, head.GetY());
+                s.body.Add(new Vector2D(-1000, head.GetY()));
+                s.body.Add(new Vector2D(-1000, head.GetY()));
+            }
+            //if x point is off the world -
+            else if (head.GetX() <= -1000)
+            {
+                s.body[s.body.Count - 1] = new Vector2D(-1000, head.GetY());
+                s.body.Add(new Vector2D(1000, head.GetY()));
+                s.body.Add(new Vector2D(1000, head.GetY()));
+            }
+            //if y point is off the world +
+            else if (head.GetY() >= 1000)
+            {
+                s.body.Remove(head);
+                s.body.Add(new Vector2D(head.GetX(), 1000));
+                s.body.Add(new Vector2D(head.GetX(), -1000));
+                s.body.Add(new Vector2D(head.GetX(), -1000));
+            }
+            //if y point is off the world -
+            else if (head.GetY() <= -1000)
+            {
+                s.body.Remove(head);
+                s.body.Add(new Vector2D(head.GetX(), -1000));
+                s.body.Add(new Vector2D(head.GetX(), 1000));
+                s.body.Add(new Vector2D(head.GetX(), 1000));
+            }
+
+            //check for snake teleportation tail
+            //if x point is off the world +
+            if (tail.GetX() >= 1000)
+            {
+
+                s.body.RemoveAt(0);
+                s.body.RemoveAt(0);
+
+            }
+            //if x point is off the world -
+            else if (tail.GetX() <= -1000)
+            {
+                s.body.RemoveAt(0);
+                s.body.RemoveAt(0);
+            }
+            //if y point is off the world +
+            else if (tail.GetY() >= 1000)
+            {
+                s.body.RemoveAt(0);
+                s.body.RemoveAt(0);
+            }
+            //if y point is off the world -
+            else if (tail.GetY() <= -1000)
+            {
+                s.body.RemoveAt(0);
+                s.body.RemoveAt(0);
+            }
+
         }
         public void AcceptConnection(SocketState state)
         {
@@ -749,6 +834,13 @@ namespace Server
         /// <param name="sender">The SocketState that represents the client</param>
         private void ProcessMessage(SocketState state)
         {
+            // Remove the client if they aren't still connected
+            if (state.ErrorOccurred)
+            {
+                RemoveClient(state.ID);
+                return;
+            }
+
             string totalData = state.GetData();
 
             string[] parts = Regex.Split(totalData, @"(?<=[\n])");
@@ -821,6 +913,7 @@ namespace Server
         Console.WriteLine("Client " + id + " disconnected");
         lock (clients)
         {
+               
             clients.Remove(id);
         }
     }
