@@ -360,6 +360,7 @@ namespace Server
             
             double wallCollisionRange = 30;
             double powerUpCollisionRange = 20;
+            double snakeCollisionRange = 15;
 
 
             //wall collisions
@@ -443,6 +444,70 @@ namespace Server
                         //set powerup to died
                         p.died = true;
                         break;
+                    }
+                }
+            }
+            //collision detection for snakes
+            foreach(Snake? snake in world.Snakes.Values)
+            {
+                if (snake != null)
+                {
+                    if (snake.snake != s.snake)
+                    {
+                        for(int i=1; i<snake.body.Count;i++) { 
+                        Vector2D diff = snake.body[i-1] - head;
+                        //if wall is Verticle
+                        if (snake.body[i-1].GetX() == snake.body[i].GetX())
+                            {
+
+
+                            if (snake.body[i - 1].GetY() < snake.body[i].GetY())
+                                {
+                                if (head.GetY() >= snake.body[i - 1].GetY() - snakeCollisionRange && head.GetY() <= snake.body[i].GetY() + snakeCollisionRange)
+                                    if (diff.GetX() <= snakeCollisionRange && diff.GetX() >= -snakeCollisionRange)
+                                    {
+                                        s.alive = false;
+                                        s.died = true;
+                                        s.score = 0;
+                                        break;
+                                    }
+                            }
+                            else if (snake.body[i - 1].GetY() > snake.body[i].GetY())
+                                    if (head.GetY() <= snake.body[i - 1].GetY() + snakeCollisionRange && head.GetY() >= snake.body[i].GetY() - snakeCollisionRange)
+                                    if (diff.GetX() <= snakeCollisionRange && diff.GetX() >= -snakeCollisionRange)
+                                    {
+                                        s.alive = false;
+                                        s.died = true;
+                                        s.score = 0;
+                                        break;
+                                    }
+                        }
+                            //if wall is Horizontal
+                            if (snake.body[i - 1].GetY() == snake.body[i].GetY())
+                            {
+                                if (snake.body[i - 1].GetX() < snake.body[i].GetX())
+                                {
+                                    if (head.GetX() >= snake.body[i - 1].GetX() - snakeCollisionRange && head.GetX() <= snake.body[i].GetX() + snakeCollisionRange)
+                                        if (diff.GetY() <= snakeCollisionRange && diff.GetY() >= -snakeCollisionRange)
+                                        {
+                                            s.alive = false;
+                                            s.died = true;
+                                            s.score = 0;
+                                            break;
+                                        }
+                                }
+
+                                else if (snake.body[i - 1].GetX() > snake.body[i].GetX())
+                                    if (head.GetX() <= snake.body[i - 1].GetX() + snakeCollisionRange && head.GetX() >= snake.body[i].GetX() - snakeCollisionRange)
+                                        if (diff.GetY() <= snakeCollisionRange && diff.GetY() >= -snakeCollisionRange)
+                                        {
+                                            s.alive = false;
+                                            s.died = true;
+                                            s.score = 0;
+                                            break;
+                                        }
+                            }
+                        }
                     }
                 }
             }
