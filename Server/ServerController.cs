@@ -23,6 +23,8 @@ namespace Server
         private int worldSize;
         private int maxPowerups=20;
         private int nextPowerID;
+        private int maxPowerupFrame;
+        private int randomPowerupFrame;
 
         private World.World world;
         // A map of clients that are connected, each with an ID
@@ -44,6 +46,10 @@ namespace Server
             respawnRate = 0;
             snakeSpeed = 6;
             world = new();
+            maxPowerupFrame = 75;
+            Random rnd = new Random();
+          
+            randomPowerupFrame = rnd.Next(0, maxPowerupFrame);
 
         }
 
@@ -147,11 +153,21 @@ namespace Server
 
                     }
                 }
-                while(world.PowerUps.Count < maxPowerups)
+                if(world.PowerUps.Count < maxPowerups)
                 {
-                    PowerUp newPower = NewPowerUpMaker(nextPowerID);
-                    world.PowerUps.Add(newPower.power, newPower);
-                    nextPowerID++;
+                    if (randomPowerupFrame > 0)
+                        randomPowerupFrame--;
+                    else 
+                    {
+                        Random rnd = new Random();
+                        randomPowerupFrame = rnd.Next(0, maxPowerupFrame);
+
+                        PowerUp newPower = NewPowerUpMaker(nextPowerID);
+                        world.PowerUps.Add(newPower.power, newPower);
+                        nextPowerID++;
+
+                    }
+                    
                 }
 
                 foreach (SocketState client in clients.Values)
@@ -162,6 +178,12 @@ namespace Server
                         {
                             world.Snakes.Remove((int)client.ID);
                             Snake newSnake = NewSnakeMaker((int)client.ID, snake.name);
+                            SnakeCollider(newSnake);
+                            while (newSnake.died == true)
+                            {
+                                newSnake = NewSnakeMaker((int)client.ID, snake.name);
+                                SnakeCollider(newSnake);
+                            }
                             world.Snakes.Add((int)client.ID, newSnake);
                         }
 
@@ -175,8 +197,18 @@ namespace Server
                         {
                             world.Snakes.Remove((int)client.ID);
                             Snake newSnake = NewSnakeMaker((int)client.ID, deadSnake.name);
+                            SnakeCollider(newSnake);
+                            while (newSnake.died == true)
+                            {
+                                newSnake = NewSnakeMaker((int)client.ID, deadSnake.name);
+                                SnakeCollider(newSnake);
+                            }
                             world.Snakes.Add((int)client.ID, newSnake);
                         }
+                    }
+                    if (world.Snakes.TryGetValue((int)client.ID, out Snake? snakeCollide))
+                    {
+                        SnakeCollider(snakeCollide);
                     }
                     if (world.Snakes.TryGetValue((int)client.ID, out Snake? snakeMove))
                     {
@@ -189,23 +221,37 @@ namespace Server
                         }
 
                     }
-                    if (world.Snakes.TryGetValue((int)client.ID, out Snake? snakeCollide))
-                    {
-                        SnakeCollider(snakeCollide);
-                    }
+                    
 
+                }
+                HashSet<long> disconnectedClients = new HashSet<long>();
+                string jsonToSend = "";
+                foreach (Snake sendSnake in world.Snakes.Values)
+                {
+                    jsonToSend += JsonSerializer.Serialize(sendSnake) + "\n";
+                }
+                foreach (PowerUp powerUp in world.PowerUps.Values)
+                {
+                    jsonToSend += JsonSerializer.Serialize(powerUp) + "\n";
                 }
                 foreach (SocketState client in clients.Values)
                 {
 
-                    foreach (Snake sendSnake in world.Snakes.Values)
+                    
+                    if(!Networking.Send(client.TheSocket, jsonToSend))
                     {
-                        Networking.Send(client.TheSocket, JsonSerializer.Serialize(sendSnake) + "\n");
+                        world.Snakes[(int)client.ID].dc = true;
+                        world.Snakes[(int)client.ID].died = true;
+                        world.Snakes[(int)client.ID].alive = false;
+                        disconnectedClients.Add(client.ID);
+
                     }
-                    foreach (PowerUp powerUp in world.PowerUps.Values)
-                    {
-                        Networking.Send(client.TheSocket, JsonSerializer.Serialize(powerUp) + "\n");
-                    }
+                        
+
+                }
+                foreach (long id in disconnectedClients)
+                {
+                    RemoveClient(id);
                 }
             }
         }
@@ -262,7 +308,7 @@ namespace Server
 
                         if (wall.p1.GetY() < wall.p2.GetY())
                         {
-                            if (y >= wall.p1.GetY() - 25 && y <= wall.p2.GetY() + 25)
+                            if (y >= wall.p1.GetY() - 35 && y <= wall.p2.GetY() + 35)
                                 if (diff.GetX() <= 35 && diff.GetX() >= -35)
                                 {
                                     valid = false;
@@ -270,7 +316,7 @@ namespace Server
                                 }
                         }
                         else if (wall.p1.GetY() > wall.p2.GetY())
-                            if (y <= wall.p1.GetY() + 25 && x >= wall.p2.GetY() - 25)
+                            if (y <= wall.p1.GetY() + 35 && x >= wall.p2.GetY() - 35)
                                 if (diff.GetX() <= 35 && diff.GetX() >= -35)
                                 {
                                     valid = false;
@@ -282,7 +328,7 @@ namespace Server
                     {
                         if (wall.p1.GetX() < wall.p2.GetX())
                         {
-                            if (x >= wall.p1.GetX() - 25 && x <= wall.p2.GetX() + 25)
+                            if (x >= wall.p1.GetX() - 35 && x <= wall.p2.GetX() + 35)
                                 if (diff.GetY() <= 35 && diff.GetY() >= -35)
                                 {
                                     valid = false;
@@ -291,7 +337,7 @@ namespace Server
                         }
 
                         else if (wall.p1.GetX() > wall.p2.GetX())
-                            if (x <= wall.p1.GetX() + 25 && x >= wall.p2.GetX() - 25)
+                            if (x <= wall.p1.GetX() + 35 && x >= wall.p2.GetX() - 35)
                                 if (diff.GetY() <= 35 && diff.GetY() >= -35)
                                 {
                                     valid = false;
@@ -311,8 +357,8 @@ namespace Server
         }
         private void SnakeCollider(Snake s)
         {
-            Vector2D head = s.body.Last<Vector2D>();
-            double wallCollisionRange = 35;
+            
+            double wallCollisionRange = 30;
             double powerUpCollisionRange = 20;
 
 
@@ -320,64 +366,67 @@ namespace Server
 
             foreach (Wall? wall in world.Walls)
             {
-                if (wall != null)
+                foreach (Vector2D body in s.body)
                 {
-                    Vector2D diff = wall.p1-head;
-                    //if wall is Verticle
-                    if (wall.p1.GetX() == wall.p2.GetX())
+                    if (wall != null)
                     {
-
-
-                        if (wall.p1.GetY() < wall.p2.GetY())
+                        Vector2D diff = wall.p1 - body;
+                        //if wall is Verticle
+                        if (wall.p1.GetX() == wall.p2.GetX())
                         {
-                            if (head.GetY() >= wall.p1.GetY() - 25 && head.GetY() <= wall.p2.GetY() + 25)
-                                if (diff.GetX() <= wallCollisionRange && diff.GetX() >= -wallCollisionRange)
-                                {
-                                    s.alive = false;
-                                    s.died = true;
-                                    s.score = 0;
-                                    break;
-                                }
-                        }
-                        else if (wall.p1.GetY() > wall.p2.GetY())
-                            if (head.GetY() <= wall.p1.GetY() + 25 && head.GetY() >= wall.p2.GetY() - 25)
-                                if (diff.GetX() <= wallCollisionRange && diff.GetX() >= -wallCollisionRange)
-                                {
-                                    s.alive = false;
-                                    s.died = true;
-                                    s.score = 0;
-                                    break;
-                                }
-                    }
-                    //if wall is Horizontal
-                    if (wall.p1.GetY() == wall.p2.GetY())
-                    {
-                        if (wall.p1.GetX() < wall.p2.GetX())
-                        {
-                            if (head.GetX() >= wall.p1.GetX() - 25 && head.GetX() <= wall.p2.GetX() + 25)
-                                if (diff.GetY() <= wallCollisionRange && diff.GetY() >= -wallCollisionRange)
-                                {
-                                    s.alive = false;
-                                    s.died = true;
-                                    s.score = 0;
-                                    break;
-                                }
-                        }
-                            
-                       else if (wall.p1.GetX() > wall.p2.GetX())
-                               if (head.GetX() <= wall.p1.GetX()+25 && head.GetX() >= wall.p2.GetX()-25)
-                                 if (diff.GetY() <= wallCollisionRange && diff.GetY() >= -wallCollisionRange)
-                                        {
-                                            s.alive = false;
-                                            s.died = true;
-                                            s.score = 0;
-                                            break;
-                                        }
-                    }
 
+
+                            if (wall.p1.GetY() < wall.p2.GetY())
+                            {
+                                if (body.GetY() >= wall.p1.GetY() - wallCollisionRange && body.GetY() <= wall.p2.GetY() + wallCollisionRange)
+                                    if (diff.GetX() <= wallCollisionRange && diff.GetX() >= -wallCollisionRange)
+                                    {
+                                        s.alive = false;
+                                        s.died = true;
+                                        s.score = 0;
+                                        break;
+                                    }
+                            }
+                            else if (wall.p1.GetY() > wall.p2.GetY())
+                                if (body.GetY() <= wall.p1.GetY() + wallCollisionRange && body.GetY() >= wall.p2.GetY() - wallCollisionRange)
+                                    if (diff.GetX() <= wallCollisionRange && diff.GetX() >= -wallCollisionRange)
+                                    {
+                                        s.alive = false;
+                                        s.died = true;
+                                        s.score = 0;
+                                        break;
+                                    }
+                        }
+                        //if wall is Horizontal
+                        if (wall.p1.GetY() == wall.p2.GetY())
+                        {
+                            if (wall.p1.GetX() < wall.p2.GetX())
+                            {
+                                if (body.GetX() >= wall.p1.GetX() - wallCollisionRange && body.GetX() <= wall.p2.GetX() + wallCollisionRange)
+                                    if (diff.GetY() <= wallCollisionRange && diff.GetY() >= -wallCollisionRange)
+                                    {
+                                        s.alive = false;
+                                        s.died = true;
+                                        s.score = 0;
+                                        break;
+                                    }
+                            }
+
+                            else if (wall.p1.GetX() > wall.p2.GetX())
+                                if (body.GetX() <= wall.p1.GetX() + wallCollisionRange && body.GetX() >= wall.p2.GetX() - wallCollisionRange)
+                                    if (diff.GetY() <= wallCollisionRange && diff.GetY() >= -wallCollisionRange)
+                                    {
+                                        s.alive = false;
+                                        s.died = true;
+                                        s.score = 0;
+                                        break;
+                                    }
+                        }
+
+                    }
                 }
             }
-
+            Vector2D head = s.body.Last<Vector2D>();
             //collision detection for powerup
             foreach(PowerUp? p in world.PowerUps.Values)
             {
@@ -553,25 +602,28 @@ namespace Server
                     
                     if (p != null)
                     {
-                        if (p.Contains("up")&&world.Snakes[(int)state.ID].dir.GetY()==0)
+                        if (world.Snakes[(int)state.ID].alive == true)
                         {
-                            world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(0,-1);
-                            world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count-1]);
-                        }
-                        else if (p.Contains("down") && world.Snakes[(int)state.ID].dir.GetY() == 0)
-                        {
-                            world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(0, 1);
-                            world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
-                        }
-                        else if (p.Contains("right") && world.Snakes[(int)state.ID].dir.GetX() == 0)
-                        {
-                            world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(1, 0);
-                            world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
-                        }
-                        else if (p.Contains("left") && world.Snakes[(int)state.ID].dir.GetX() == 0)
-                        {
-                            world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(-1, 0);
-                            world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                            if (p.Contains("up") && world.Snakes[(int)state.ID].dir.GetY() == 0)
+                            {
+                                world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(0, -1);
+                                world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                            }
+                            else if (p.Contains("down") && world.Snakes[(int)state.ID].dir.GetY() == 0)
+                            {
+                                world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(0, 1);
+                                world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                            }
+                            else if (p.Contains("right") && world.Snakes[(int)state.ID].dir.GetX() == 0)
+                            {
+                                world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(1, 0);
+                                world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                            }
+                            else if (p.Contains("left") && world.Snakes[(int)state.ID].dir.GetX() == 0)
+                            {
+                                world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(-1, 0);
+                                world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                            }
                         }
                     }
 
