@@ -364,131 +364,47 @@ namespace Server
 
 
             //wall collisions
-
-            foreach (Wall? wall in world.Walls)
+           
+                foreach (Wall? wall in world.Walls)
             {
-                foreach (Vector2D body in s.body)
-                {
-                    if (wall != null)
+                    foreach (Vector2D body in s.body)
                     {
-                        Vector2D diff = wall.p1 - body;
-                        //if wall is Verticle
-                        if (wall.p1.GetX() == wall.p2.GetX())
+                        if (wall != null)
                         {
-
-
-                            if (wall.p1.GetY() < wall.p2.GetY())
-                            {
-                                if (body.GetY() >= wall.p1.GetY() - wallCollisionRange && body.GetY() <= wall.p2.GetY() + wallCollisionRange)
-                                    if (diff.GetX() <= wallCollisionRange && diff.GetX() >= -wallCollisionRange)
-                                    {
-                                        s.alive = false;
-                                        s.died = true;
-                                        s.score = 0;
-                                        break;
-                                    }
-                            }
-                            else if (wall.p1.GetY() > wall.p2.GetY())
-                                if (body.GetY() <= wall.p1.GetY() + wallCollisionRange && body.GetY() >= wall.p2.GetY() - wallCollisionRange)
-                                    if (diff.GetX() <= wallCollisionRange && diff.GetX() >= -wallCollisionRange)
-                                    {
-                                        s.alive = false;
-                                        s.died = true;
-                                        s.score = 0;
-                                        break;
-                                    }
-                        }
-                        //if wall is Horizontal
-                        if (wall.p1.GetY() == wall.p2.GetY())
-                        {
-                            if (wall.p1.GetX() < wall.p2.GetX())
-                            {
-                                if (body.GetX() >= wall.p1.GetX() - wallCollisionRange && body.GetX() <= wall.p2.GetX() + wallCollisionRange)
-                                    if (diff.GetY() <= wallCollisionRange && diff.GetY() >= -wallCollisionRange)
-                                    {
-                                        s.alive = false;
-                                        s.died = true;
-                                        s.score = 0;
-                                        break;
-                                    }
-                            }
-
-                            else if (wall.p1.GetX() > wall.p2.GetX())
-                                if (body.GetX() <= wall.p1.GetX() + wallCollisionRange && body.GetX() >= wall.p2.GetX() - wallCollisionRange)
-                                    if (diff.GetY() <= wallCollisionRange && diff.GetY() >= -wallCollisionRange)
-                                    {
-                                        s.alive = false;
-                                        s.died = true;
-                                        s.score = 0;
-                                        break;
-                                    }
-                        }
-
-                    }
-                }
-            }
-            Vector2D head = s.body.Last<Vector2D>();
-            //collision detection for powerup
-            foreach(PowerUp? p in world.PowerUps.Values)
-            {
-                if (p.died == false)
-                {
-                    Vector2D diff = p.loc - head;
-                    if (diff.GetX() <= powerUpCollisionRange && diff.GetX() >= -powerUpCollisionRange && diff.GetY() <= powerUpCollisionRange && diff.GetY() >= -powerUpCollisionRange)
-                    {
-                        //set to grow
-                        s.growing = true;
-                        s.growingFrames = 0;
-                        //increase score
-                        s.score++;
-                        //set powerup to died
-                        p.died = true;
-                        break;
-                    }
-                }
-            }
-            //collision detection for snakes
-            foreach(Snake? snake in world.Snakes.Values)
-            {
-                if (snake != null)
-                {
-                    if (snake.snake != s.snake)
-                    {
-                        for(int i=1; i<snake.body.Count;i++) { 
-                        Vector2D diff = snake.body[i-1] - head;
-                        //if wall is Verticle
-                        if (snake.body[i-1].GetX() == snake.body[i].GetX())
+                            Vector2D diff = wall.p1 - body;
+                            //if wall is Verticle
+                            if (wall.p1.GetX() == wall.p2.GetX())
                             {
 
 
-                            if (snake.body[i - 1].GetY() < snake.body[i].GetY())
+                                if (wall.p1.GetY() < wall.p2.GetY())
                                 {
-                                if (head.GetY() >= snake.body[i - 1].GetY() - snakeCollisionRange && head.GetY() <= snake.body[i].GetY() + snakeCollisionRange)
-                                    if (diff.GetX() <= snakeCollisionRange && diff.GetX() >= -snakeCollisionRange)
-                                    {
-                                        s.alive = false;
-                                        s.died = true;
-                                        s.score = 0;
-                                        break;
-                                    }
+                                    if (body.GetY() >= wall.p1.GetY() - wallCollisionRange && body.GetY() <= wall.p2.GetY() + wallCollisionRange)
+                                        if (diff.GetX() <= wallCollisionRange && diff.GetX() >= -wallCollisionRange)
+                                        {
+                                            s.alive = false;
+                                            s.died = true;
+                                            s.score = 0;
+                                            break;
+                                        }
+                                }
+                                else if (wall.p1.GetY() > wall.p2.GetY())
+                                    if (body.GetY() <= wall.p1.GetY() + wallCollisionRange && body.GetY() >= wall.p2.GetY() - wallCollisionRange)
+                                        if (diff.GetX() <= wallCollisionRange && diff.GetX() >= -wallCollisionRange)
+                                        {
+                                            s.alive = false;
+                                            s.died = true;
+                                            s.score = 0;
+                                            break;
+                                        }
                             }
-                            else if (snake.body[i - 1].GetY() > snake.body[i].GetY())
-                                    if (head.GetY() <= snake.body[i - 1].GetY() + snakeCollisionRange && head.GetY() >= snake.body[i].GetY() - snakeCollisionRange)
-                                    if (diff.GetX() <= snakeCollisionRange && diff.GetX() >= -snakeCollisionRange)
-                                    {
-                                        s.alive = false;
-                                        s.died = true;
-                                        s.score = 0;
-                                        break;
-                                    }
-                        }
                             //if wall is Horizontal
-                            if (snake.body[i - 1].GetY() == snake.body[i].GetY())
+                            if (wall.p1.GetY() == wall.p2.GetY())
                             {
-                                if (snake.body[i - 1].GetX() < snake.body[i].GetX())
+                                if (wall.p1.GetX() < wall.p2.GetX())
                                 {
-                                    if (head.GetX() >= snake.body[i - 1].GetX() - snakeCollisionRange && head.GetX() <= snake.body[i].GetX() + snakeCollisionRange)
-                                        if (diff.GetY() <= snakeCollisionRange && diff.GetY() >= -snakeCollisionRange)
+                                    if (body.GetX() >= wall.p1.GetX() - wallCollisionRange && body.GetX() <= wall.p2.GetX() + wallCollisionRange)
+                                        if (diff.GetY() <= wallCollisionRange && diff.GetY() >= -wallCollisionRange)
                                         {
                                             s.alive = false;
                                             s.died = true;
@@ -497,9 +413,9 @@ namespace Server
                                         }
                                 }
 
-                                else if (snake.body[i - 1].GetX() > snake.body[i].GetX())
-                                    if (head.GetX() <= snake.body[i - 1].GetX() + snakeCollisionRange && head.GetX() >= snake.body[i].GetX() - snakeCollisionRange)
-                                        if (diff.GetY() <= snakeCollisionRange && diff.GetY() >= -snakeCollisionRange)
+                                else if (wall.p1.GetX() > wall.p2.GetX())
+                                    if (body.GetX() <= wall.p1.GetX() + wallCollisionRange && body.GetX() >= wall.p2.GetX() - wallCollisionRange)
+                                        if (diff.GetY() <= wallCollisionRange && diff.GetY() >= -wallCollisionRange)
                                         {
                                             s.alive = false;
                                             s.died = true;
@@ -507,6 +423,201 @@ namespace Server
                                             break;
                                         }
                             }
+
+                        
+                    }
+                }
+            }
+            
+                Vector2D head = s.body.Last<Vector2D>();
+                //collision detection for powerup
+                foreach (PowerUp? p in world.PowerUps.Values)
+                {
+                    if (p.died == false)
+                    {
+                        Vector2D diff = p.loc - head;
+                        if (diff.GetX() <= powerUpCollisionRange && diff.GetX() >= -powerUpCollisionRange && diff.GetY() <= powerUpCollisionRange && diff.GetY() >= -powerUpCollisionRange)
+                        {
+                            //set to grow
+                            s.growing = true;
+                            s.growingFrames = 0;
+                            //increase score
+                            s.score++;
+                            //set powerup to died
+                            p.died = true;
+                            break;
+                        }
+                    }
+                
+            }
+
+            //collision detection for snakes
+            
+                foreach (Snake? snake in world.Snakes.Values)
+            {
+                    if (snake != null)
+                    {
+                        if (snake.snake != s.snake)
+                        {
+                            for (int i = 1; i < snake.body.Count; i++)
+                            {
+                                Vector2D diff = snake.body[i - 1] - head;
+                                //if wall is Verticle
+                                if (snake.body[i - 1].GetX() == snake.body[i].GetX())
+                                {
+
+
+                                    if (snake.body[i - 1].GetY() < snake.body[i].GetY())
+                                    {
+                                        if (head.GetY() >= snake.body[i - 1].GetY() - snakeCollisionRange && head.GetY() <= snake.body[i].GetY() + snakeCollisionRange)
+                                            if (diff.GetX() <= snakeCollisionRange && diff.GetX() >= -snakeCollisionRange)
+                                            {
+                                                s.alive = false;
+                                                s.died = true;
+                                                s.score = 0;
+                                                break;
+                                            }
+                                    }
+                                    else if (snake.body[i - 1].GetY() > snake.body[i].GetY())
+                                        if (head.GetY() <= snake.body[i - 1].GetY() + snakeCollisionRange && head.GetY() >= snake.body[i].GetY() - snakeCollisionRange)
+                                            if (diff.GetX() <= snakeCollisionRange && diff.GetX() >= -snakeCollisionRange)
+                                            {
+                                                s.alive = false;
+                                                s.died = true;
+                                                s.score = 0;
+                                                break;
+                                            }
+                                }
+                                //if wall is Horizontal
+                                if (snake.body[i - 1].GetY() == snake.body[i].GetY())
+                                {
+                                    if (snake.body[i - 1].GetX() < snake.body[i].GetX())
+                                    {
+                                        if (head.GetX() >= snake.body[i - 1].GetX() - snakeCollisionRange && head.GetX() <= snake.body[i].GetX() + snakeCollisionRange)
+                                            if (diff.GetY() <= snakeCollisionRange && diff.GetY() >= -snakeCollisionRange)
+                                            {
+                                                s.alive = false;
+                                                s.died = true;
+                                                s.score = 0;
+                                                break;
+                                            }
+                                    }
+
+                                    else if (snake.body[i - 1].GetX() > snake.body[i].GetX())
+                                        if (head.GetX() <= snake.body[i - 1].GetX() + snakeCollisionRange && head.GetX() >= snake.body[i].GetX() - snakeCollisionRange)
+                                            if (diff.GetY() <= snakeCollisionRange && diff.GetY() >= -snakeCollisionRange)
+                                            {
+                                                s.alive = false;
+                                                s.died = true;
+                                                s.score = 0;
+                                                break;
+                                            }
+                                }
+                            }
+                        }
+                    
+                    else
+                    {
+                       
+                        bool checking = false;
+                            for (int i = snake.body.Count - 1; i > 0; i--)
+                            {
+
+                                if (i <= snake.body.Count - 3 && !checking)
+                                {
+                                    Vector2D bToA = snake.body[i] - snake.body[i - 1];
+                                    bToA.Normalize();
+                                    if (snake.dir.GetX() == 1)
+                                    {
+                                        if (bToA.GetX() == -1)
+                                        {
+                                            checking = true;
+                                            continue;
+                                        }
+                                    }
+                                    if (snake.dir.GetX() == -1)
+                                    {
+                                        if (bToA.GetX() == 1)
+                                        {
+                                            checking = true;
+                                            continue;
+                                        }
+                                    }
+                                    if (snake.dir.GetY() == 1)
+                                    {
+                                        if (bToA.GetY() == -1)
+                                        {
+                                            checking = true;
+                                            continue;
+                                        }
+                                    }
+                                    if (snake.dir.GetY() == -1)
+                                    {
+                                        if (bToA.GetY() == 1)
+                                        {
+                                            checking = true;
+                                            continue;
+                                        }
+                                    }
+                                }
+                                if (checking)
+                                {
+                                    Vector2D diff = snake.body[i] - head;
+                                    //if wall is Verticle
+                                    if (snake.body[i].GetX() == snake.body[i - 1].GetX())
+                                    {
+
+
+                                        if (snake.body[i].GetY() < snake.body[i - 1].GetY())
+                                        {
+                                            if (head.GetY() >= snake.body[i].GetY() - snakeCollisionRange && head.GetY() <= snake.body[i - 1].GetY() + snakeCollisionRange)
+                                                if (diff.GetX() <= snakeCollisionRange && diff.GetX() >= -snakeCollisionRange)
+                                                {
+                                                    s.alive = false;
+                                                    s.died = true;
+                                                    s.score = 0;
+                                                    break;
+                                                }
+                                        }
+                                        else if (snake.body[i].GetY() > snake.body[i - 1].GetY())
+                                            if (head.GetY() <= snake.body[i].GetY() + snakeCollisionRange && head.GetY() >= snake.body[i - 1].GetY() - snakeCollisionRange)
+                                                if (diff.GetX() <= snakeCollisionRange && diff.GetX() >= -snakeCollisionRange)
+                                                {
+                                                    s.alive = false;
+                                                    s.died = true;
+                                                    s.score = 0;
+                                                    break;
+                                                }
+                                    }
+                                    //if wall is Horizontal
+                                    if (snake.body[i].GetY() == snake.body[i - 1].GetY())
+                                    {
+                                        if (snake.body[i].GetX() < snake.body[i - 1].GetX())
+                                        {
+                                            if (head.GetX() >= snake.body[i].GetX() - snakeCollisionRange && head.GetX() <= snake.body[i - 1].GetX() + snakeCollisionRange)
+                                                if (diff.GetY() <= snakeCollisionRange && diff.GetY() >= -snakeCollisionRange)
+                                                {
+                                                    s.alive = false;
+                                                    s.died = true;
+                                                    s.score = 0;
+                                                    break;
+                                                }
+                                        }
+
+                                        else if (snake.body[i].GetX() > snake.body[i - 1].GetX())
+                                            if (head.GetX() <= snake.body[i].GetX() + snakeCollisionRange && head.GetX() >= snake.body[i - 1].GetX() - snakeCollisionRange)
+                                                if (diff.GetY() <= snakeCollisionRange && diff.GetY() >= -snakeCollisionRange)
+                                                {
+                                                    s.alive = false;
+                                                    s.died = true;
+                                                    s.score = 0;
+                                                    break;
+                                                }
+                                    }
+
+
+                                }
+                            
                         }
                     }
                 }
