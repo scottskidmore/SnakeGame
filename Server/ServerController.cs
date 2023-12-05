@@ -133,7 +133,7 @@ namespace Server
                 lock (world) { Update(); }
 
                 //send the update
-                lock (world) { SendUpdate(); }
+                
                 
                
             }
@@ -275,11 +275,12 @@ namespace Server
 
 
                 }
+            lock (world) { SendUpdate(); }
 
-            
 
-             
-            
+
+
+
         }
         private PowerUp NewPowerUpMaker(int nextPower)
         {
@@ -825,7 +826,7 @@ namespace Server
 
             string totalData = state.GetData();
 
-            string[] parts = Regex.Split(totalData, @"(?<=[\n])");
+            string[] parts = Regex.Split(totalData, @"(?=[\n])");
 
             //create snake
             Snake newSnake = new Snake((int)state.ID, parts[0]);
