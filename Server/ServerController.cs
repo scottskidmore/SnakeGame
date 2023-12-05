@@ -484,7 +484,7 @@ namespace Server
             
                 foreach (Snake? snake in world.Snakes.Values)
             {
-                    if (snake != null)
+                    if (snake != null&&!snake.died)
                     {
                         if (snake.snake != s.snake)
                         {
@@ -913,25 +913,27 @@ namespace Server
                         {
                             lock (world)
                             {
-                                if (p.Contains("up") && world.Snakes[(int)state.ID].dir.GetY() == 0)
-                                {
-                                    world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(0, -1);
-                                    world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
-                                }
-                                else if (p.Contains("down") && world.Snakes[(int)state.ID].dir.GetY() == 0)
-                                {
-                                    world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(0, 1);
-                                    world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
-                                }
-                                else if (p.Contains("right") && world.Snakes[(int)state.ID].dir.GetX() == 0)
-                                {
-                                    world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(1, 0);
-                                    world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
-                                }
-                                else if (p.Contains("left") && world.Snakes[(int)state.ID].dir.GetX() == 0)
-                                {
-                                    world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(-1, 0);
-                                    world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                                if (world.Snakes[(int)state.ID].body.Count > 1){
+                                    if (p.Contains("up") && world.Snakes[(int)state.ID].dir.GetY() == 0)
+                                    {
+                                        world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(0, -1);
+                                        world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                                    }
+                                    else if (p.Contains("down") && world.Snakes[(int)state.ID].dir.GetY() == 0)
+                                    {
+                                        world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(0, 1);
+                                        world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                                    }
+                                    else if (p.Contains("right") && world.Snakes[(int)state.ID].dir.GetX() == 0)
+                                    {
+                                        world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(1, 0);
+                                        world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                                    }
+                                    else if (p.Contains("left") && world.Snakes[(int)state.ID].dir.GetX() == 0)
+                                    {
+                                        world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(-1, 0);
+                                        world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                                    }
                                 }
                             }
                         }
