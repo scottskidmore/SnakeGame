@@ -314,6 +314,7 @@ namespace Server
                 dir = new Vector2D(-1, 0);
                 endPoint = new Vector2D(startPoint.GetX()+120, startPoint.GetY());
             }
+            dir.Normalize();
             List<Vector2D> list = new List<Vector2D>() { endPoint, startPoint };
             return new Snake(id,name,0,list,dir,false,true,false,false);
         }
@@ -381,7 +382,8 @@ namespace Server
                 
                 if (valid == true)
                 {
-                    return new Vector2D(x, y);
+                    newPoint.Normalize();
+                    return newPoint;
                 }
 
             }
@@ -661,7 +663,7 @@ namespace Server
         {
             if (s.alive&& s.body.Count > 1)
             {
-
+                s.dir.Normalize();
                 double headMoveX = s.dir.GetX();
                 double headMoveY = s.dir.GetY();
                
@@ -712,6 +714,7 @@ namespace Server
                     }
                     else s.growingFrames++;
                     Vector2D newTail = new Vector2D(newTailX, newTailY);
+                newTail.Normalize();
 
 
                 s.body[0] = newTail;
@@ -728,7 +731,7 @@ namespace Server
             
                 Vector2D head = s.body[s.body.Count - 1];
                 Vector2D tail = s.body[0];
-
+                
                 //if x point is off the world +
                 if (head.GetX() >= 1000)
                 {
@@ -760,6 +763,7 @@ namespace Server
                     s.body.Add(new Vector2D(head.GetX(), 1000));
                     s.body.Add(new Vector2D(head.GetX(), 1000));
                 }
+                
 
                 //check for snake teleportation tail
                 //if x point is off the world +
@@ -788,7 +792,11 @@ namespace Server
                     s.body.RemoveAt(0);
                     s.body.RemoveAt(0);
                 }
-            
+
+            foreach (Vector2D v in s.body)
+            {
+                v.Normalize();
+            }
 
         }
         public void AcceptConnection(SocketState state)
@@ -920,21 +928,25 @@ namespace Server
                                     if (p.Contains("up") && world.Snakes[(int)state.ID].dir.GetY() == 0)
                                     {
                                         world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(0, -1);
+                                        world.Snakes[(int)state.ID].dir.Normalize();
                                         world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
                                     }
                                     else if (p.Contains("down") && world.Snakes[(int)state.ID].dir.GetY() == 0)
                                     {
                                         world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(0, 1);
+                                        world.Snakes[(int)state.ID].dir.Normalize();
                                         world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
                                     }
                                     else if (p.Contains("right") && world.Snakes[(int)state.ID].dir.GetX() == 0)
                                     {
                                         world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(1, 0);
+                                        world.Snakes[(int)state.ID].dir.Normalize();
                                         world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
                                     }
                                     else if (p.Contains("left") && world.Snakes[(int)state.ID].dir.GetX() == 0)
                                     {
                                         world.Snakes[(int)state.ID].dir = new SnakeGame.Vector2D(-1, 0);
+                                        world.Snakes[(int)state.ID].dir.Normalize();
                                         world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
                                     }
                                 }
