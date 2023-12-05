@@ -267,8 +267,11 @@ namespace Server
                     }
                     if (world.Snakes.TryGetValue((int)client.ID, out Snake? snakeCollide))
                     {
+                    if (snakeCollide.body.Count > 0)
+                    {
                         SnakeCollider(snakeCollide);
                     }
+                }
 
 
                 }
@@ -653,7 +656,7 @@ namespace Server
         }
         private void SnakeMover (Snake s)
         {
-            if (s.alive&& s.body.Count > 0)
+            if (s.alive&& s.body.Count > 1)
             {
 
                 double headMoveX = s.dir.GetX();
@@ -710,14 +713,7 @@ namespace Server
 
                 s.body[0] = newTail;
                 s.body[s.body.Count - 1] = newHead;
-                double length = 0;
-                for (int i = s.body.Count - 1; i > 0; i--)
-                {
-                    length += Math.Abs( s.body[i].GetX() - s.body[i - 1].GetX());
-                    length += Math.Abs(s.body[i].GetY() - s.body[i - 1].GetY());
-                }
-                Console.WriteLine(length);
-
+                
                 }
                 else { s.framesDead++; }
             
