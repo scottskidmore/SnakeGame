@@ -11,7 +11,7 @@ namespace World
 		public Dictionary<int,Snake> Snakes{ get; }
 		public List<Wall?> Walls { get; }
         public Dictionary<int,PowerUp> PowerUps { get; }
-        public Dictionary<int,DeadSnake> DeadSnakes { get; }
+        public Dictionary<int,DeadSnake> DeadSnakes { get; }      
         public int PlayerID { get; set; }
         public int WorldSize { get; set; }
         public World()

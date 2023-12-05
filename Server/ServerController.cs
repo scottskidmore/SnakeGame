@@ -129,16 +129,57 @@ namespace Server
                     
                 }
                 watch.Restart();
-                Update();
                 //update the world
+                lock (world) { Update(); }
+
+                //send the update
+                lock (world) { SendUpdate(); }
+                
+               
             }
             
         }
 
+        private void SendUpdate()
+
+        {
+            HashSet<long> disconnectedClients = new HashSet<long>();
+            string jsonToSend = "";
+            
+                foreach (Snake sendSnake in world.Snakes.Values)
+                {
+                    jsonToSend += JsonSerializer.Serialize(sendSnake) + "\n";
+                }
+                foreach (PowerUp powerUp in world.PowerUps.Values)
+                {
+                    jsonToSend += JsonSerializer.Serialize(powerUp) + "\n";
+                }
+                foreach (SocketState client in clients.Values)
+                {
+
+
+                    if (!Networking.Send(client.TheSocket, jsonToSend))
+                    {
+                        world.Snakes[(int)client.ID].dc = true;
+                        world.Snakes[(int)client.ID].died = true;
+                        world.Snakes[(int)client.ID].alive = false;
+                        disconnectedClients.Add(client.ID);
+
+                    }
+
+
+                }
+            
+            foreach (long id in disconnectedClients)
+            {
+                RemoveClient(id);
+            }
+
+        }
+
         private void Update()
         {
-            lock (world)
-            {
+           
                 foreach (PowerUp? p in world.PowerUps.Values)
                 {
                     if (p.died == true)
@@ -232,40 +273,9 @@ namespace Server
 
                 }
 
-            }
+            
 
-                HashSet<long> disconnectedClients = new HashSet<long>();
-                string jsonToSend = "";
-            lock (world)
-            {
-                foreach (Snake sendSnake in world.Snakes.Values)
-                {
-                    jsonToSend += JsonSerializer.Serialize(sendSnake) + "\n";
-                }
-                foreach (PowerUp powerUp in world.PowerUps.Values)
-                {
-                    jsonToSend += JsonSerializer.Serialize(powerUp) + "\n";
-                }
-                foreach (SocketState client in clients.Values)
-                {
-
-
-                    if (!Networking.Send(client.TheSocket, jsonToSend))
-                    {
-                        world.Snakes[(int)client.ID].dc = true;
-                        world.Snakes[(int)client.ID].died = true;
-                        world.Snakes[(int)client.ID].alive = false;
-                        disconnectedClients.Add(client.ID);
-
-                    }
-
-
-                }
-            }
-                foreach (long id in disconnectedClients)
-                {
-                    RemoveClient(id);
-                }
+             
             
         }
         private PowerUp NewPowerUpMaker(int nextPower)
@@ -813,12 +823,14 @@ namespace Server
                 
             }
             //recieve name
-            
-            string name = state.GetData();
+
+            string totalData = state.GetData();
+
+            string[] parts = Regex.Split(totalData, @"(?<=[\n])");
 
             //create snake
-            Snake newSnake = new Snake((int)state.ID, name);
-            state.RemoveData(0, name.Length);
+            Snake newSnake = new Snake((int)state.ID, parts[0]);
+            state.RemoveData(0, parts[0].Length + parts[1].Length);
             lock (world)
             {
                 world.Snakes.Add(newSnake.snake, newSnake);
