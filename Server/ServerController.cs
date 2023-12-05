@@ -144,22 +144,22 @@ namespace Server
 
         {
             HashSet<long> disconnectedClients = new HashSet<long>();
-            string jsonToSend = "";
             
-                foreach (Snake sendSnake in world.Snakes.Values)
-                {
-                    jsonToSend += JsonSerializer.Serialize(sendSnake) + "\n";
-                }
-                foreach (PowerUp powerUp in world.PowerUps.Values)
-                {
-                    jsonToSend += JsonSerializer.Serialize(powerUp) + "\n";
-                }
             lock (clients)
             {
                 foreach (SocketState client in clients.Values)
                 {
+                    string jsonToSend = JsonSerializer.Serialize(world.Snakes[(int)client.ID])+"\n";
+                    foreach (Snake sendSnake in world.Snakes.Values)
+                    {
+                        if(sendSnake.snake!=client.ID)
+                            jsonToSend += JsonSerializer.Serialize(sendSnake) + "\n";
 
-
+                    }
+                    foreach (PowerUp powerUp in world.PowerUps.Values)
+                    {
+                        jsonToSend += JsonSerializer.Serialize(powerUp) + "\n";
+                    }
                     if (!Networking.Send(client.TheSocket, jsonToSend))
                     {
                         world.Snakes[(int)client.ID].dc = true;
