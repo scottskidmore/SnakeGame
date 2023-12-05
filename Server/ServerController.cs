@@ -382,7 +382,7 @@ namespace Server
                 
                 if (valid == true)
                 {
-                    newPoint.Normalize();
+                    
                     return newPoint;
                 }
 
@@ -714,7 +714,7 @@ namespace Server
                     }
                     else s.growingFrames++;
                     Vector2D newTail = new Vector2D(newTailX, newTailY);
-                newTail.Normalize();
+                
 
 
                 s.body[0] = newTail;
@@ -793,10 +793,7 @@ namespace Server
                     s.body.RemoveAt(0);
                 }
 
-            foreach (Vector2D v in s.body)
-            {
-                v.Normalize();
-            }
+           
 
         }
         public void AcceptConnection(SocketState state)
