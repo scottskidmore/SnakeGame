@@ -154,6 +154,8 @@ namespace Server
                 {
                     jsonToSend += JsonSerializer.Serialize(powerUp) + "\n";
                 }
+            lock (clients)
+            {
                 foreach (SocketState client in clients.Values)
                 {
 
@@ -169,6 +171,7 @@ namespace Server
 
 
                 }
+            }
             
             foreach (long id in disconnectedClients)
             {
