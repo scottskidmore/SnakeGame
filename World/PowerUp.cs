@@ -13,6 +13,7 @@ namespace World
         public int power { get; }
         public Vector2D loc { get; }
         public bool died { get; set; }
+        [JsonIgnore]
         public int deathTimer { get; set; }
         [JsonConstructor]
         public PowerUp(int power,Vector2D loc,bool died)

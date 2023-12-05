@@ -11,8 +11,7 @@ namespace World
 	public class Snake
 	{
 		public int snake { get; }
-        public int framesDead { get; set; }
-        public int growingFrames { get; set; }
+        
         public string name { get; }
         public int score { get; set; }
         public List<Vector2D> body { get; }
@@ -21,7 +20,12 @@ namespace World
         public bool alive { get; set; }
         public bool dc { get; set; }
         public bool join { get; }
+        [JsonIgnore]
         public bool growing { get; set; }
+        [JsonIgnore]
+        public int framesDead { get; set; }
+        [JsonIgnore]
+        public int growingFrames { get; set; }
         [JsonConstructor]
         public Snake(int snake,string name,int score,List<Vector2D> body,Vector2D dir,bool died, bool alive,bool dc,bool join)
 		{
@@ -36,6 +40,7 @@ namespace World
 			this.join = join;
 
 		}
+        
         public Snake(int snake, string name)
 		{
             this.snake = snake;
