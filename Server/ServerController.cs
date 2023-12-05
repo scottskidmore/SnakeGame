@@ -854,9 +854,9 @@ namespace Server
                     walls=walls+JsonSerializer.Serialize(wall) + "\n";
                 }
             }
-            Networking.Send(state.TheSocket, newSnake.snake + "\n" + worldSize + "\n"+walls);
+            Networking.Send(state.TheSocket, newSnake.snake + "\n" + worldSize + "\n");
 
-
+            Networking.Send(state.TheSocket, walls);
 
             // Save the client state
             // Need to lock here because clients can disconnect at any time
