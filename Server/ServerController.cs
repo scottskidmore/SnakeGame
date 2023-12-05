@@ -321,53 +321,56 @@ namespace Server
                 double y = rnd.Next(-worldSize / 2, worldSize / 2);
                 Vector2D newPoint = new Vector2D(x,y);
 
-                foreach(Wall? wall in world.Walls)
+                foreach (Wall? wall in world.Walls)
 
                 {
-                    Vector2D? diff = newPoint - wall.p2;
-                    if (wall.p1.GetX() == wall.p2.GetX())
+                    if (wall != null)
                     {
-
-
-                        if (wall.p1.GetY() < wall.p2.GetY())
+                        Vector2D? diff = newPoint - wall.p2;
+                        if (wall.p1.GetX() == wall.p2.GetX())
                         {
-                            if (y >= wall.p1.GetY() - 35 && y <= wall.p2.GetY() + 35)
-                                if (diff.GetX() <= 35 && diff.GetX() >= -35)
-                                {
-                                    valid = false;
-                                    break;
-                                }
+
+
+                            if (wall.p1.GetY() < wall.p2.GetY())
+                            {
+                                if (y >= wall.p1.GetY() - 35 && y <= wall.p2.GetY() + 35)
+                                    if (diff.GetX() <= 35 && diff.GetX() >= -35)
+                                    {
+                                        valid = false;
+                                        break;
+                                    }
+                            }
+                            else if (wall.p1.GetY() > wall.p2.GetY())
+                                if (y <= wall.p1.GetY() + 35 && x >= wall.p2.GetY() - 35)
+                                    if (diff.GetX() <= 35 && diff.GetX() >= -35)
+                                    {
+                                        valid = false;
+                                        break;
+                                    }
                         }
-                        else if (wall.p1.GetY() > wall.p2.GetY())
-                            if (y <= wall.p1.GetY() + 35 && x >= wall.p2.GetY() - 35)
-                                if (diff.GetX() <= 35 && diff.GetX() >= -35)
-                                {
-                                    valid = false;
-                                    break;
-                                }
-                    }
-                    //if wall is Horizontal
-                    if (wall.p1.GetY() == wall.p2.GetY())
-                    {
-                        if (wall.p1.GetX() < wall.p2.GetX())
+                        //if wall is Horizontal
+                        if (wall.p1.GetY() == wall.p2.GetY())
                         {
-                            if (x >= wall.p1.GetX() - 35 && x <= wall.p2.GetX() + 35)
-                                if (diff.GetY() <= 35 && diff.GetY() >= -35)
-                                {
-                                    valid = false;
-                                    break;
-                                }
+                            if (wall.p1.GetX() < wall.p2.GetX())
+                            {
+                                if (x >= wall.p1.GetX() - 35 && x <= wall.p2.GetX() + 35)
+                                    if (diff.GetY() <= 35 && diff.GetY() >= -35)
+                                    {
+                                        valid = false;
+                                        break;
+                                    }
+                            }
+
+                            else if (wall.p1.GetX() > wall.p2.GetX())
+                                if (x <= wall.p1.GetX() + 35 && x >= wall.p2.GetX() - 35)
+                                    if (diff.GetY() <= 35 && diff.GetY() >= -35)
+                                    {
+                                        valid = false;
+                                        break;
+                                    }
                         }
 
-                        else if (wall.p1.GetX() > wall.p2.GetX())
-                            if (x <= wall.p1.GetX() + 35 && x >= wall.p2.GetX() - 35)
-                                if (diff.GetY() <= 35 && diff.GetY() >= -35)
-                                {
-                                    valid = false;
-                                    break;
-                                }
                     }
-
                 }
                 
                 if (valid == true)
