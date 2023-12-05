@@ -284,7 +284,9 @@ namespace Server
         }
         private PowerUp NewPowerUpMaker(int nextPower)
         {
-            return new PowerUp(nextPower, ValidSpawnPoint(), false);
+            PowerUp newPower = new PowerUp(nextPower, ValidSpawnPoint(), false);
+            newPower.deathTimer = 0;
+            return newPower;
         }
         private Snake NewSnakeMaker(int id,string name)
         {

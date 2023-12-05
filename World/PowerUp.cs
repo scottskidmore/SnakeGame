@@ -21,8 +21,10 @@ namespace World
 			this.power = power;
 			this.loc = loc;
 			this.died = died;
-			this.deathTimer = 0;
+			
 		}
-	}
+        
+       
+    }
 }
 
