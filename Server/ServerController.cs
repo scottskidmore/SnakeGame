@@ -37,7 +37,10 @@ namespace Server
         private SnakeDeath snakeDeath;
         private PowerUpEffect powerUpEffect;
 
-
+        /////////////////////////////////////////////////////////////////////////////////////////
+        // Code to Start and Maintain Server
+        /////////////////////////////////////////////////////////////////////////////////////////
+        
         static void Main(string[] args)
         {
             ServerController server = new ServerController();
@@ -61,8 +64,9 @@ namespace Server
             {
                 snakeDeath = new(SnakeMatchDeath);
                 powerUpEffect = new(PowerUpEffectDM);
-                powerupLength = 100;
-                maxPowerups = 20;
+                //invincibility is 5 seconds when framerate is 34 seconds
+                powerupLength = 170;
+                maxPowerups = 5;
             }
             else
             {
@@ -162,40 +166,18 @@ namespace Server
 
         }
 
-        private void SendUpdate( string jsonToSend)
+        /////////////////////////////////////////////////////////////////////////////////////////
+        // Server Code to Update and Send World to Clients
+        /////////////////////////////////////////////////////////////////////////////////////////
 
-        {
-            HashSet<long> disconnectedClients = new HashSet<long>();
-
-            lock (clients)
-            {
-                foreach (SocketState client in clients.Values)
-                {
-                    
-                   
-                    if (!Networking.Send(client.TheSocket, jsonToSend))
-                    {
-                        world.Snakes[(int)client.ID].dc = true;
-                        world.Snakes[(int)client.ID].died = true;
-                        world.Snakes[(int)client.ID].alive = false;
-                        disconnectedClients.Add(client.ID);
-
-                    }
-
-
-                }
-            }
-
-            foreach (long id in disconnectedClients)
-            {
-                RemoveClient(id);
-            }
-
-        }
-
+        /// <summary>
+        /// Updates world by performing respawning of powerups and snakes, moving all snakes that
+        /// are alive, and checking for any snkae collisions
+        /// compiles all changes in a JSON file and gives/starts the sending method.
+        /// </summary>
         private void Update()
         {
-            
+
 
             foreach (PowerUp? p in world.PowerUps.Values)
             {
@@ -232,33 +214,33 @@ namespace Server
             {
                 Snake newSnake = world.Snakes[key];
 
-                 //check if snake is new or if it needs to be respawned
-                if (newSnake.join|| newSnake.framesDead >= respawnRate)
+                //check if snake is new or if it needs to be respawned
+                if (newSnake.join || newSnake.framesDead >= respawnRate)
                 {
-                    
+
                     newSnake = NewSnakeMaker(newSnake.snake, newSnake.name);
-                    
+
                 }
                 //check if snake is dead
                 if (newSnake.died == true)
                     newSnake.died = false;
-                
+
                 if (newSnake.body.Count > 0)
                 {
                     SnakeMover(newSnake);
 
-                    
+
                 }
 
-                world.Snakes[key]= newSnake;
+                world.Snakes[key] = newSnake;
 
 
             }
             string jsonToSend = "";
             foreach (Snake sendSnake in world.Snakes.Values)
             {
-                
-                    jsonToSend += JsonSerializer.Serialize(sendSnake) + "\n";
+
+                jsonToSend += JsonSerializer.Serialize(sendSnake) + "\n";
 
             }
             foreach (PowerUp powerUp in world.PowerUps.Values)
@@ -269,12 +251,63 @@ namespace Server
             SendUpdate(jsonToSend);
 
         }
+
+        /// <summary>
+        /// Once update JSON has been recieved this method sends the JSON to all clients,
+        /// handles client DCs, and removes DCed clients from client list.
+        /// </summary>
+        /// <param name="jsonToSend">JSON string of world update to be sent to the clients/param>
+        private void SendUpdate( string jsonToSend)
+
+        {
+            HashSet<long> disconnectedClients = new HashSet<long>();
+
+            lock (clients)
+            {
+                foreach (SocketState client in clients.Values)
+                {
+                    
+                   
+                    if (!Networking.Send(client.TheSocket, jsonToSend))
+                    {
+                        world.Snakes[(int)client.ID].dc = true;
+                        world.Snakes[(int)client.ID].died = true;
+                        world.Snakes[(int)client.ID].alive = false;
+                        disconnectedClients.Add(client.ID);
+
+                    }
+
+
+                }
+            }
+
+            foreach (long id in disconnectedClients)
+            {
+                RemoveClient(id);
+            }
+
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////////////
+        // Server Methods to Create and Spawn New World Objects
+        /////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Creates a new PowerUp object
+        /// </summary>
+        /// <param name="nextPower">int representing the next valid PowerUp ID/param>
         private PowerUp NewPowerUpMaker(int nextPower)
         {
             PowerUp newPower = new PowerUp(nextPower, ValidSpawnPoint(), false);
             newPower.deathTimer = 0;
             return newPower;
         }
+
+        /// <summary>
+        /// Creates a new Snake object
+        /// </summary>
+        /// <param name="id">int Client ID used as new snake ID/param>
+        /// <param name="name">string of client's name used as new snake name/param>
         private Snake NewSnakeMaker(int id,string name)
         {
             Vector2D startPoint = ValidSpawnPoint();
@@ -310,6 +343,10 @@ namespace Server
             else
                 return tempSnake;
         }
+
+        /// <summary>
+        /// Finds a valid vector point for a new object to spawn
+        /// </summary>
         private Vector2D ValidSpawnPoint()
         {
             while (true)
@@ -381,6 +418,161 @@ namespace Server
             }
 
         }
+
+        /////////////////////////////////////////////////////////////////////////////////////////
+        // Server Methods for Moving and Coliding Snakes
+        /////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// This method calculates the next position of the snake and moves the snake to the
+        /// next frames position. calls the teleporter to check for teleportation
+        /// </summary>
+        /// <param name="s">The snake to be moved</param>
+        private void SnakeMover(Snake s)
+        {
+
+
+            //only move if snake has two points and is alive (maybe change)
+            if (s.alive && s.body.Count > 1)
+            {
+                s.dir.Normalize();
+                double headMoveX = s.dir.GetX();
+                double headMoveY = s.dir.GetY();
+
+                Vector2D head = s.body.Last<Vector2D>();
+                Vector2D newHead = new Vector2D(head.GetX() + (headMoveX * snakeSpeed), head.GetY() + (headMoveY * snakeSpeed));
+
+
+
+                Vector2D tail = s.body.First<Vector2D>();
+
+                double newTailX = tail.GetX();
+                double newTailY = tail.GetY();
+                bool growing = false;
+
+                //check if powerup needs to stop
+                if (!deathMatch)
+                    growing = PowerupTimer(s);
+
+                if (tail.GetX() == s.body[1].GetX() && growing == false)
+                {
+
+                    if (tail.GetY() < s.body[1].GetY())
+                    {
+
+                        newTailY = tail.GetY() + snakeSpeed;
+                        if (newTailY == s.body[1].GetY())
+                            s.body.Remove(tail);
+                    }
+                    else if (tail.GetY() > s.body[1].GetY())
+                    {
+
+                        newTailY = tail.GetY() - snakeSpeed;
+                        if (newTailY == s.body[1].GetY())
+                            s.body.Remove(tail);
+                    }
+
+
+                }
+                else if (tail.GetY() == s.body[1].GetY() && growing == false)
+                {
+                    if (tail.GetX() < s.body[1].GetX())
+                    {
+                        newTailX = tail.GetX() + snakeSpeed;
+                        if (newTailX == s.body[1].GetX())
+                            s.body.Remove(tail);
+                    }
+                    else if (tail.GetX() > s.body[1].GetX())
+                    {
+                        newTailX = tail.GetX() - snakeSpeed;
+                        if (newTailX == s.body[1].GetX())
+                            s.body.Remove(tail);
+                    }
+
+
+                }
+
+                Vector2D newTail = new Vector2D(newTailX, newTailY);
+
+
+
+                s.body[0] = newTail;
+                s.body[s.body.Count - 1] = newHead;
+                //check for snake teleportation
+                snakeTeleporter(s);
+            }
+            else { s.framesDead++; }
+
+
+        }
+
+        /// <summary>
+        /// This method checks if the snake has left the world map and must be teleported to the other side of the map
+        /// and informs the controller if it has
+        /// </summary>
+        /// <param name="s">The snake to be checked</param>
+        private void snakeTeleporter(Snake s)
+        {
+
+
+            Vector2D head = s.body[s.body.Count - 1];
+            Vector2D tail = s.body[0];
+
+
+            //if x point is off the world +
+            if (head.GetX() >= 1000)
+            {
+
+                s.body[s.body.Count - 1] = new Vector2D(1000, head.GetY());
+                s.body.Add(new Vector2D(-1000, head.GetY()));
+                s.body.Add(new Vector2D(-1000, head.GetY()));
+            }
+
+            //if x point is off the world -
+
+            else if (head.GetX() <= -1000)
+            {
+                s.body[s.body.Count - 1] = new Vector2D(-1000, head.GetY());
+                s.body.Add(new Vector2D(1000, head.GetY()));
+                s.body.Add(new Vector2D(1000, head.GetY()));
+            }
+            //if y point is off the world +
+            else if (head.GetY() >= 1000)
+            {
+                s.body.Remove(head);
+                s.body.Add(new Vector2D(head.GetX(), 1000));
+                s.body.Add(new Vector2D(head.GetX(), -1000));
+                s.body.Add(new Vector2D(head.GetX(), -1000));
+            }
+            //if y point is off the world -
+            else if (head.GetY() <= -1000)
+            {
+                s.body.Remove(head);
+                s.body.Add(new Vector2D(head.GetX(), -1000));
+                s.body.Add(new Vector2D(head.GetX(), 1000));
+                s.body.Add(new Vector2D(head.GetX(), 1000));
+            }
+
+
+            //check for snake teleportation tail
+            //if x point or y p[oint is outside of world bounds for tail
+
+            if (tail.GetX() >= 1000 || tail.GetX() <= -1000 || tail.GetY() >= 1000 || tail.GetY() <= -1000)
+            {
+                s.body.RemoveAt(0);
+                s.body.RemoveAt(0);
+
+            }
+
+            //check for collisions
+            SnakeCollider(s);
+
+        }
+
+        /// <summary>
+        /// This method checks if the snake has collided with any world objects after moving and/or teleporting
+        /// </summary>
+        /// <param name="s">The snake to be checked</param>
         private void SnakeCollider(Snake s)
         {
             
@@ -647,18 +839,53 @@ namespace Server
             }
 
         }
+
+        /////////////////////////////////////////////////////////////////////////////////////////
+        // Server Methods and Functions for Different Game Modes
+        /////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// This method updates the snake score and death if a collison occured between two snakes
+        /// for the deathmatch game mode
+        /// </summary>
+        /// <param name="s">The snake that died</param>
+        /// <param name="e">The snake that was collieded into</param>
         private void SnakeMatchDeath( Snake s,  Snake e)
         {
             s.alive = false;
             s.died = true;
             e.score ++;
         }
+
+        /// <summary>
+        /// This method updates the snake score and death if a collison occured between two snakes
+        /// for the normal game mode
+        /// </summary>
+        /// <param name="s">The snake that died</param>
+        /// <param name="e">The snake that was collieded into</param>
         private void SnakeNormDeath(Snake s, Snake e)
         {
             s.alive = false;
             s.died = true;
             s.score = 0;
         }
+
+        /// <summary>
+        /// This method activates the powerup effect for deathmatch game mode (which is invincibility)
+        /// </summary>
+        /// <param name="s">The snake that consumed the PowerUp</param>
+        private void PowerUpEffectDM(Snake s)
+        {
+            //set to Invincible
+            s.invincible = true;
+            s.invincibleFrames = 0;
+            
+        }
+
+        /// <summary>
+        /// This method activates the powerup effect for normal game mode (which is grow)
+        /// </summary>
+        /// <param name="s">The snake that consumed the PowerUp</param>
         private void PowerUpEffectNorm(Snake s)
         {
             //set to grow
@@ -666,13 +893,6 @@ namespace Server
             s.growingFrames = 0;
             //increase score
             s.score++;
-        }
-        private void PowerUpEffectDM(Snake s)
-        {
-            //set to Invincible
-            s.invincible = true;
-            s.invincibleFrames = 0;
-            
         }
         private bool PowerupTimer(Snake s)
         {
@@ -690,147 +910,20 @@ namespace Server
                 s.growingFrames++;
             return s.growing;
         }
-        private void SnakeMover (Snake s)
-        {
-            
-            
-            //only move if snake has two points and is alive (maybe change)
-            if (s.alive&& s.body.Count > 1)
-            {
-                s.dir.Normalize();
-                double headMoveX = s.dir.GetX();
-                double headMoveY = s.dir.GetY();
-               
-                    Vector2D head = s.body.Last<Vector2D>();
-                    Vector2D newHead = new Vector2D(head.GetX() + (headMoveX * snakeSpeed), head.GetY() + (headMoveY * snakeSpeed));
 
+        /////////////////////////////////////////////////////////////////////////////////////////
+        // Client Acceptance, Recieving, and Removing code
+        /////////////////////////////////////////////////////////////////////////////////////////
 
-
-                    Vector2D tail = s.body.First<Vector2D>();
-                
-                    double newTailX = tail.GetX();
-                    double newTailY = tail.GetY();
-                bool growing = false;
-
-                //check if powerup needs to stop
-                if (!deathMatch)
-                    growing = PowerupTimer(s);
-
-                if (tail.GetX() == s.body[1].GetX() && growing == false)
-                    {
-
-                        if (tail.GetY() < s.body[1].GetY())
-                        {
-
-                        newTailY = tail.GetY() + snakeSpeed;
-                        if (newTailY == s.body[1].GetY())
-                            s.body.Remove(tail);
-                    }
-                    else if (tail.GetY() > s.body[1].GetY())
-                    {
-
-                        newTailY = tail.GetY() - snakeSpeed;
-                        if(newTailY == s.body[1].GetY())
-                            s.body.Remove(tail);
-                    }
-                    
-
-                }
-                else if (tail.GetY() == s.body[1].GetY() && growing == false)
-                {
-                    if (tail.GetX() < s.body[1].GetX())
-                    {
-                        newTailX = tail.GetX() + snakeSpeed;
-                        if (newTailX == s.body[1].GetX())
-                            s.body.Remove(tail);
-                    }
-                    else if (tail.GetX() > s.body[1].GetX())
-                    {
-                        newTailX = tail.GetX() - snakeSpeed;
-                        if (newTailX == s.body[1].GetX())
-                            s.body.Remove(tail);
-                    }
-                   
-
-                    }
-                    
-                    Vector2D newTail = new Vector2D(newTailX, newTailY);
-                
-
-
-                s.body[0] = newTail;
-                s.body[s.body.Count - 1] = newHead;
-                //check for snake teleportation
-                snakeTeleporter(s);
-            }
-                else { s.framesDead++; }
-            
-            
-        }
-
-        private void snakeTeleporter(Snake s)
-        {
-            
-
-            Vector2D head = s.body[s.body.Count - 1];
-                Vector2D tail = s.body[0];
-
-            
-            //if x point is off the world +
-            if (head.GetX() >= 1000)
-                {
-
-                s.body[s.body.Count - 1] = new Vector2D(1000, head.GetY());
-                    s.body.Add(new Vector2D(-1000, head.GetY()));
-                    s.body.Add(new Vector2D(-1000, head.GetY()));
-                }
-
-            //if x point is off the world -
-           
-                else if (head.GetX() <= -1000)
-                {
-                    s.body[s.body.Count - 1] = new Vector2D(-1000, head.GetY());
-                    s.body.Add(new Vector2D(1000, head.GetY()));
-                    s.body.Add(new Vector2D(1000, head.GetY()));
-                }
-                //if y point is off the world +
-                else if (head.GetY() >= 1000)
-                {
-                    s.body.Remove(head);
-                    s.body.Add(new Vector2D(head.GetX(), 1000));
-                    s.body.Add(new Vector2D(head.GetX(), -1000));
-                    s.body.Add(new Vector2D(head.GetX(), -1000));
-                }
-                //if y point is off the world -
-                else if (head.GetY() <= -1000)
-                {
-                s.body.Remove(head);
-                    s.body.Add(new Vector2D(head.GetX(), -1000));
-                    s.body.Add(new Vector2D(head.GetX(), 1000));
-                    s.body.Add(new Vector2D(head.GetX(), 1000));
-                }
-
-
-            //check for snake teleportation tail
-            //if x point or y p[oint is outside of world bounds for tail
-
-            if (tail.GetX() >= 1000|| tail.GetX() <= -1000|| tail.GetY() >= 1000|| tail.GetY() <= -1000)
-                {
-                    s.body.RemoveAt(0);
-                    s.body.RemoveAt(0);
-
-                }
-            
-            //check for collisions
-            SnakeCollider(s);
-
-        }
+        /// <summary>
+        /// Method to be invoked by the networking library
+        /// when a new client connects and begins handshake process
+        /// </summary>
+        /// <param name="state">The SocketState representing the new client</param>
         public void AcceptConnection(SocketState state)
         {
             if (state.ErrorOccurred)
                 return;
-
-           
 
             // change the state's network action to the 
             // receive handler so we can process data when something
@@ -842,7 +935,7 @@ namespace Server
 
         /// <summary>
         /// Method to be invoked by the networking library
-        /// when a network action occurs (see lines 64-66)
+        /// when a network action occurs immediatly after a client has been accepted
         /// </summary>
         /// <param name="state"></param>
         private void ReceiveHandshake(SocketState state)
@@ -896,13 +989,11 @@ namespace Server
             Networking.GetData(state);
         }
 
-    
+
 
         /// <summary>
-        /// Given the data that has arrived so far, 
-        /// potentially from multiple receive operations, 
-        /// determine if we have enough to make a complete message,
-        /// and process it (print it and broadcast it to other clients).
+        /// Method to be invoked by the networking library
+        /// when a network action occurs, recieves client movement instructions
         /// </summary>
         /// <param name="sender">The SocketState that represents the client</param>
         private void ProcessMessage(SocketState state)
