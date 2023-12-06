@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 using NetworkUtil;
 using SnakeGame;
@@ -15,26 +16,26 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Server
 {
-	public class ServerController
-	{
+    public class ServerController
+    {
         private int time;
-        private int respawnRate=24;
+        private int respawnRate = 24;
         private int snakeSpeed;
         private int worldSize;
-        private int maxPowerups=20;
+        private int maxPowerups = 20;
         private int nextPowerID;
         private int maxPowerupFrame;
         private int randomPowerupFrame;
 
         private World.World world;
         // A map of clients that are connected, each with an ID
-        private Dictionary<long, SocketState> clients ;
+        private Dictionary<long, SocketState> clients;
 
         static void Main(string[] args)
         {
             ServerController server = new ServerController();
             server.StartServer();
-            
+
         }
         /// <summary>
         /// Initialized the server's state
@@ -48,7 +49,7 @@ namespace Server
             world = new();
             maxPowerupFrame = 75;
             Random rnd = new Random();
-          
+
             randomPowerupFrame = rnd.Next(0, maxPowerupFrame);
 
         }
@@ -110,9 +111,9 @@ namespace Server
 
             }
             //populate powerups
-            for (int i = 0; i<maxPowerups; i++)
+            for (int i = 0; i < maxPowerups; i++)
             {
-              
+
                 world.PowerUps.Add(i, NewPowerUpMaker(i));
                 nextPowerID++;
             }
@@ -126,40 +127,31 @@ namespace Server
                 watch.Start();
                 while (watch.ElapsedMilliseconds < time)
                 {
-                    
+
                 }
                 watch.Restart();
                 //update the world
                 lock (world) { Update(); }
 
                 //send the update
-                
-                
-               
+
+
+
             }
-            
+
         }
 
-        private void SendUpdate()
+        private void SendUpdate( string jsonToSend)
 
         {
             HashSet<long> disconnectedClients = new HashSet<long>();
-            
+
             lock (clients)
             {
                 foreach (SocketState client in clients.Values)
                 {
-                    string jsonToSend = JsonSerializer.Serialize(world.Snakes[(int)client.ID])+"\n";
-                    foreach (Snake sendSnake in world.Snakes.Values)
-                    {
-                        if(sendSnake.snake!=client.ID)
-                            jsonToSend += JsonSerializer.Serialize(sendSnake) + "\n";
-
-                    }
-                    foreach (PowerUp powerUp in world.PowerUps.Values)
-                    {
-                        jsonToSend += JsonSerializer.Serialize(powerUp) + "\n";
-                    }
+                    
+                   
                     if (!Networking.Send(client.TheSocket, jsonToSend))
                     {
                         world.Snakes[(int)client.ID].dc = true;
@@ -172,7 +164,7 @@ namespace Server
 
                 }
             }
-            
+
             foreach (long id in disconnectedClients)
             {
                 RemoveClient(id);
@@ -182,107 +174,92 @@ namespace Server
 
         private void Update()
         {
-           
-                foreach (PowerUp? p in world.PowerUps.Values)
+            
+
+            foreach (PowerUp? p in world.PowerUps.Values)
+            {
+                if (p.died)
                 {
-                    if (p.died == true)
+                    //advance timer by 1
+                    p.deathTimer++;
+                    if (p.deathTimer >= respawnRate)
                     {
-                        //advance timer by 1
-                        p.deathTimer++;
-                        if (p.deathTimer >= respawnRate)
-                        {
-                            world.PowerUps.Remove(p.power);
-
-                        }
+                        world.PowerUps.Remove(p.power);
 
                     }
+
                 }
-                if (world.PowerUps.Count < maxPowerups)
+            }
+            if (world.PowerUps.Count < maxPowerups)
+            {
+                if (randomPowerupFrame > 0)
+                    randomPowerupFrame--;
+                else
                 {
-                    if (randomPowerupFrame > 0)
-                        randomPowerupFrame--;
-                    else
-                    {
-                        Random rnd = new Random();
-                        randomPowerupFrame = rnd.Next(0, maxPowerupFrame);
+                    Random rnd = new Random();
+                    randomPowerupFrame = rnd.Next(0, maxPowerupFrame);
 
-                        PowerUp newPower = NewPowerUpMaker(nextPowerID);
-                        world.PowerUps.Add(newPower.power, newPower);
-                        nextPowerID++;
-
-                    }
+                    PowerUp newPower = NewPowerUpMaker(nextPowerID);
+                    world.PowerUps.Add(newPower.power, newPower);
+                    nextPowerID++;
 
                 }
 
-                foreach (SocketState client in clients.Values)
+            }
+
+            foreach (int key in world.Snakes.Keys)
+            {
+                Snake newSnake = world.Snakes[key];
+
+                //check if snake is new
+                if (newSnake.join)
                 {
-                    if (world.Snakes.TryGetValue((int)client.ID, out Snake? snake))
-                    {
-                        if (snake.join)
-                        {
-                            world.Snakes.Remove((int)client.ID);
-                            Snake newSnake = NewSnakeMaker((int)client.ID, snake.name);
-                            SnakeCollider(newSnake);
-                            while (newSnake.died == true)
-                            {
-                                newSnake = NewSnakeMaker((int)client.ID, snake.name);
-                                SnakeCollider(newSnake);
-                            }
-                            world.Snakes.Add((int)client.ID, newSnake);
-                        }
+                    
+                    newSnake = NewSnakeMaker(newSnake.snake, newSnake.name);
+                    
+                }
+                //check if snake is dead
+                if (newSnake.died == true)
+                    newSnake.died = false;
+                if (newSnake.framesDead >= respawnRate)
+                {
+                    //respawn snake 
+                    newSnake = NewSnakeMaker(newSnake.snake, newSnake.name);
+                    
+                }
+                if (newSnake.body.Count > 0)
+                {
+                    Console.WriteLine("Snake:" +newSnake.snake + "has body part count before mover of " + newSnake.body.Count);
+                    SnakeMover(newSnake);
+                    Console.WriteLine("Snake:" + newSnake.snake + "has body part count after mover of " + newSnake.body.Count);
+                    //check for snake teleportation
+                    snakeTeleporter(newSnake);
+                    Console.WriteLine("Snake:" + newSnake.snake + "has body part count after teleporter of " + newSnake.body.Count);
 
-                    }
-                    //respawn snake  
-                    if (world.Snakes.TryGetValue((int)client.ID, out Snake? deadSnake))
-                    {
-                        if (deadSnake.died == true)
-                            deadSnake.died = false;
-                        if (deadSnake.framesDead >= respawnRate)
-                        {
-                            world.Snakes.Remove((int)client.ID);
-                            Snake newSnake = NewSnakeMaker((int)client.ID, deadSnake.name);
-                            SnakeCollider(newSnake);
-                            while (newSnake.died == true)
-                            {
-                                newSnake = NewSnakeMaker((int)client.ID, deadSnake.name);
-                                SnakeCollider(newSnake);
-                            }
-                            world.Snakes.Add((int)client.ID, newSnake);
-                        }
-                    }
-
-                    if (world.Snakes.TryGetValue((int)client.ID, out Snake? snakeMove))
-                    {
-                        if (snakeMove.body.Count > 0)
-                        {
-                            SnakeMover(snakeMove);
-                            //check for snake teleportation
-                            snakeTeleporter(snakeMove);
-
-                            if (snakeMove.growing == true && snakeMove.growingFrames >= 24)
-                            {
-                                snakeMove.growing = false;
-
-
-                            }
-                        }
-
-                    }
-                    if (world.Snakes.TryGetValue((int)client.ID, out Snake? snakeCollide))
-                    {
-                    if (snakeCollide.body.Count > 0)
-                    {
-                        SnakeCollider(snakeCollide);
-                    }
+                    if (newSnake.growing == true && newSnake.growingFrames >= 24)
+                        newSnake.growing = false;
+                    //check for collisions
+                    Console.WriteLine("Snake:" + newSnake.snake + "has body part count before collider of " + newSnake.body.Count);
+                    SnakeCollider(newSnake);
                 }
 
-
-                }
-            lock (world) { SendUpdate(); }
+                world.Snakes[key]= newSnake;
 
 
+            }
+            string jsonToSend = "";
+            foreach (Snake sendSnake in world.Snakes.Values)
+            {
+                
+                    jsonToSend += JsonSerializer.Serialize(sendSnake) + "\n";
 
+            }
+            foreach (PowerUp powerUp in world.PowerUps.Values)
+            {
+                jsonToSend += JsonSerializer.Serialize(powerUp) + "\n";
+            }
 
+            SendUpdate(jsonToSend);
 
         }
         private PowerUp NewPowerUpMaker(int nextPower)
@@ -319,7 +296,12 @@ namespace Server
             }
             dir.Normalize();
             List<Vector2D> list = new List<Vector2D>() { endPoint, startPoint };
-            return new Snake(id,name,0,list,dir,false,true,false,false);
+            Snake tempSnake = new Snake(id, name, 0, list, dir, false, true, false, false);
+            SnakeCollider(tempSnake);
+            if (tempSnake.died==true)
+                return NewSnakeMaker(id, name);
+            else
+                return tempSnake;
         }
         private Vector2D ValidSpawnPoint()
         {
@@ -492,7 +474,7 @@ namespace Server
             
                 foreach (Snake? snake in world.Snakes.Values)
             {
-                    if (snake != null&&!snake.died)
+                    if (snake != null&&snake.alive)
                     {
                         if (snake.snake != s.snake)
                         {
