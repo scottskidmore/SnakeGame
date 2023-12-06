@@ -1107,32 +1107,36 @@ namespace Server
                 {
                     JsonDocument doc = JsonDocument.Parse(p);
                     
-                    if (p != null)
+                    var result =  JsonSerializer.Deserialize<Dictionary<string, string>>(p);
+                    var mystring = result?["moving"];
+                    Console.WriteLine(mystring);
+
+                    if (result != null)
                     {
                         if (world.Snakes[(int)state.ID].alive == true)
                         {
                             lock (world)
                             {
                                 if (world.Snakes[(int)state.ID].body.Count > 1){
-                                    if (p.Contains("up") && world.Snakes[(int)state.ID].dir.GetY() == 0)
+                                    if (mystring == "up" && world.Snakes[(int)state.ID].dir.GetY() == 0)
                                     {
                                         world.Snakes[(int)state.ID].dir = new Vector2D(0, -1);
                                         world.Snakes[(int)state.ID].dir.Normalize();
                                         world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
                                     }
-                                    else if (p.Contains("down") && world.Snakes[(int)state.ID].dir.GetY() == 0)
+                                    else if (mystring == "down" && world.Snakes[(int)state.ID].dir.GetY() == 0)
                                     {
                                         world.Snakes[(int)state.ID].dir = new Vector2D(0, 1);
                                         world.Snakes[(int)state.ID].dir.Normalize();
                                         world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
                                     }
-                                    else if (p.Contains("right") && world.Snakes[(int)state.ID].dir.GetX() == 0)
+                                    else if (mystring == "right" && world.Snakes[(int)state.ID].dir.GetX() == 0)
                                     {
                                         world.Snakes[(int)state.ID].dir = new Vector2D(1, 0);
                                         world.Snakes[(int)state.ID].dir.Normalize();
                                         world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
                                     }
-                                    else if (p.Contains("left") && world.Snakes[(int)state.ID].dir.GetX() == 0)
+                                    else if (mystring == "left" && world.Snakes[(int)state.ID].dir.GetX() == 0)
                                     {
                                         world.Snakes[(int)state.ID].dir = new Vector2D(-1, 0);
                                         world.Snakes[(int)state.ID].dir.Normalize();
