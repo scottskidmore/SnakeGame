@@ -584,44 +584,44 @@ namespace Server
 
 
             //if x point is off the world +
-            if (head.GetX() >= 1000)
+            if (head.GetX() >= worldSize / 2)
             {
 
                 s.body[s.body.Count - 1] = new Vector2D(1000, head.GetY());
-                s.body.Add(new Vector2D(-1000, head.GetY()));
-                s.body.Add(new Vector2D(-1000, head.GetY()));
+                s.body.Add(new Vector2D(-worldSize/2, head.GetY()));
+                s.body.Add(new Vector2D(-worldSize / 2, head.GetY()));
             }
 
             //if x point is off the world -
 
-            else if (head.GetX() <= -1000)
+            else if (head.GetX() <= -worldSize / 2)
             {
-                s.body[s.body.Count - 1] = new Vector2D(-1000, head.GetY());
-                s.body.Add(new Vector2D(1000, head.GetY()));
-                s.body.Add(new Vector2D(1000, head.GetY()));
+                s.body[s.body.Count - 1] = new Vector2D(-worldSize / 2, head.GetY());
+                s.body.Add(new Vector2D(worldSize / 2, head.GetY()));
+                s.body.Add(new Vector2D(worldSize / 2, head.GetY()));
             }
             //if y point is off the world +
-            else if (head.GetY() >= 1000)
+            else if (head.GetY() >= worldSize / 2)
             {
                 s.body.Remove(head);
-                s.body.Add(new Vector2D(head.GetX(), 1000));
-                s.body.Add(new Vector2D(head.GetX(), -1000));
-                s.body.Add(new Vector2D(head.GetX(), -1000));
+                s.body.Add(new Vector2D(head.GetX(), worldSize / 2));
+                s.body.Add(new Vector2D(head.GetX(), -worldSize / 2));
+                s.body.Add(new Vector2D(head.GetX(), -worldSize / 2));
             }
             //if y point is off the world -
-            else if (head.GetY() <= -1000)
+            else if (head.GetY() <= -worldSize / 2)
             {
                 s.body.Remove(head);
-                s.body.Add(new Vector2D(head.GetX(), -1000));
-                s.body.Add(new Vector2D(head.GetX(), 1000));
-                s.body.Add(new Vector2D(head.GetX(), 1000));
+                s.body.Add(new Vector2D(head.GetX(), -worldSize / 2));
+                s.body.Add(new Vector2D(head.GetX(), worldSize / 2));
+                s.body.Add(new Vector2D(head.GetX(), worldSize / 2));
             }
 
 
             //check for snake teleportation tail
             //if x point or y p[oint is outside of world bounds for tail
 
-            if (tail.GetX() >= 1000 || tail.GetX() <= -1000 || tail.GetY() >= 1000 || tail.GetY() <= -1000)
+            if (tail.GetX() >= worldSize / 2 || tail.GetX() <= -worldSize / 2 || tail.GetY() >= worldSize / 2 || tail.GetY() <= -worldSize / 2)
             {
                 s.body.RemoveAt(0);
                 s.body.RemoveAt(0);
