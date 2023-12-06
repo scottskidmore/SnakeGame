@@ -58,21 +58,9 @@ namespace Server
             snakeSpeed = 6;
             world = new();
             maxPowerupFrame = 75;
-            //test
-            deathMatch = true;
-            if (deathMatch)
-            {
-                snakeDeath = new(SnakeMatchDeath);
-                powerUpEffect = new(PowerUpEffectDM);
-                //invincibility is 5 seconds when framerate is 34 seconds
-                powerupLength = 170;
-                maxPowerups = 5;
-            }
-            else
-            {
-                snakeDeath = new(SnakeNormDeath);
-                powerUpEffect = new(PowerUpEffectNorm);
-            }
+            snakeDeath = new(SnakeNormDeath);
+            powerUpEffect = new(PowerUpEffectNorm);
+            
             Random rnd = new Random();
 
             randomPowerupFrame = rnd.Next(0, maxPowerupFrame);
@@ -89,15 +77,73 @@ namespace Server
             reader.ReadToDescendant("GameSettings");
             while (reader.Read())
             {
-                if (reader.NodeType == XmlNodeType.Element && reader.Name == "MSPerFrame")
+                if (reader.NodeType == XmlNodeType.Element && reader.Name == "GrowthRate")
                 {
                     XmlRootAttribute xRoot = new XmlRootAttribute();
-                    xRoot.ElementName = "MSPerFrame";
+                    xRoot.ElementName = "GrowthRate";
                     XmlSerializer xmlSerializer = new XmlSerializer(typeof(int), xRoot);
                     int? loadedObjectXml = xmlSerializer.Deserialize(reader.ReadSubtree()) as int?;
                     if (loadedObjectXml != null)
                     {
-                        time = (int)loadedObjectXml;
+                        if (powerupLength == 170)
+                        {
+                        }
+                        else
+                        {
+                            powerupLength = (int)loadedObjectXml;
+                        }
+                        
+                    }
+                }
+                if (reader.NodeType == XmlNodeType.Element && reader.Name == "DeathMatch")
+                {
+                    XmlRootAttribute xRoot = new XmlRootAttribute();
+                    xRoot.ElementName = "DeathMatch";
+                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(bool), xRoot);
+                    bool? loadedObjectXml = xmlSerializer.Deserialize(reader.ReadSubtree()) as bool?;
+                    if (loadedObjectXml != null)
+                    {
+                        bool deathmatch = (bool)loadedObjectXml;
+                        if (deathmatch)
+                        {
+
+                            snakeDeath = new(SnakeMatchDeath);
+                            powerUpEffect = new(PowerUpEffectDM);
+                            //invincibility is 5 seconds when framerate is 34 seconds
+                            powerupLength = 170;
+                            maxPowerups = 5;
+                        }
+                       
+                        
+                    }
+                    else
+                    {
+                        snakeDeath = new(SnakeNormDeath);
+                        powerUpEffect = new(PowerUpEffectNorm);
+                    }
+                }
+                if (reader.NodeType == XmlNodeType.Element && reader.Name == "SnakeSpeed")
+                {
+                    XmlRootAttribute xRoot = new XmlRootAttribute();
+                    xRoot.ElementName = "SnakeSpeed";
+                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(int), xRoot);
+                    int? loadedObjectXml = xmlSerializer.Deserialize(reader.ReadSubtree()) as int?;
+                    if (loadedObjectXml != null)
+                    {
+                        snakeSpeed = (int)loadedObjectXml;
+
+                    }
+                }
+                if (reader.NodeType == XmlNodeType.Element && reader.Name == "MaxPowerUps")
+                {
+                    XmlRootAttribute xRoot = new XmlRootAttribute();
+                    xRoot.ElementName = "MaxPowerUps";
+                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(int), xRoot);
+                    int? loadedObjectXml = xmlSerializer.Deserialize(reader.ReadSubtree()) as int?;
+                    if (loadedObjectXml != null)
+                    {
+                        maxPowerups = (int)loadedObjectXml;
+
                     }
                 }
                 if (reader.NodeType == XmlNodeType.Element && reader.Name == "RespawnRate")
@@ -109,8 +155,21 @@ namespace Server
                     if (loadedObjectXml != null)
                     {
                         respawnRate = (int)loadedObjectXml;
+
                     }
                 }
+                if (reader.NodeType == XmlNodeType.Element && reader.Name == "MSPerFrame")
+                {
+                    XmlRootAttribute xRoot = new XmlRootAttribute();
+                    xRoot.ElementName = "MSPerFrame";
+                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(int), xRoot);
+                    int? loadedObjectXml = xmlSerializer.Deserialize(reader.ReadSubtree()) as int?;
+                    if (loadedObjectXml != null)
+                    {
+                        time = (int)loadedObjectXml;
+                    }
+                }
+               
                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "UniverseSize")
                 {
                     XmlRootAttribute xRoot = new XmlRootAttribute();
@@ -217,8 +276,9 @@ namespace Server
                 //check if snake is new or if it needs to be respawned
                 if (newSnake.join || newSnake.framesDead >= respawnRate)
                 {
-
-                    newSnake = NewSnakeMaker(newSnake.snake, newSnake.name);
+                    
+                        newSnake = NewSnakeMaker(newSnake.snake, newSnake.name);
+                    
 
                 }
                 //check if snake is dead
@@ -241,6 +301,10 @@ namespace Server
             {
 
                 jsonToSend += JsonSerializer.Serialize(sendSnake) + "\n";
+                if (sendSnake.dc)
+                {
+                    world.Snakes.Remove(sendSnake.snake);
+                }
 
             }
             foreach (PowerUp powerUp in world.PowerUps.Values)
@@ -1001,7 +1065,15 @@ namespace Server
             // Remove the client if they aren't still connected
             if (state.ErrorOccurred)
             {
+                lock (world)
+                {
+                    world.Snakes[(int)state.ID].died = true;
+                    world.Snakes[(int)state.ID].dc = true;
+                    world.Snakes[(int)state.ID].alive = false;
+                    
+                }
                 lock (clients)
+
                 {
                     RemoveClient(state.ID);
                 }
