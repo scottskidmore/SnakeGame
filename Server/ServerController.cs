@@ -230,10 +230,10 @@ namespace Server
                 if (newSnake.body.Count > 0)
                 {
                     SnakeMover(newSnake);
-                    Console.WriteLine("Snake:" + newSnake.snake + "has body part count before teleporter of " + newSnake.body.Count);
+                 
                     //check for snake teleportation
                     snakeTeleporter(newSnake);
-                    Console.WriteLine("Snake:" + newSnake.snake + "has body part count after teleporter of " + newSnake.body.Count);
+               
 
                     if (newSnake.growing == true && newSnake.growingFrames >= 24)
                         newSnake.growing = false;
@@ -719,8 +719,6 @@ namespace Server
             //if x point is off the world +
             if (head.GetX() >= 1000)
                 {
-                throw new Exception();
-                Console.WriteLine("Snake:" + s.snake + "has body part count before head.GetX() >= 1000 of " + s.body.Count);
 
                 s.body[s.body.Count - 1] = new Vector2D(1000, head.GetY());
                     s.body.Add(new Vector2D(-1000, head.GetY()));
@@ -731,8 +729,6 @@ namespace Server
            
                 else if (head.GetX() <= -1000)
                 {
-                throw new Exception();
-                Console.WriteLine("Snake:" + s.snake + "has body part count before head.GetX() <= -1000 of " + s.body.Count);
                     s.body[s.body.Count - 1] = new Vector2D(-1000, head.GetY());
                     s.body.Add(new Vector2D(1000, head.GetY()));
                     s.body.Add(new Vector2D(1000, head.GetY()));
@@ -740,8 +736,6 @@ namespace Server
                 //if y point is off the world +
                 else if (head.GetY() >= 1000)
                 {
-                throw new Exception();
-                Console.WriteLine("Snake:" + s.snake + "has body part count before head.GetY() >= 1000 of " + s.body.Count);
                     s.body.Remove(head);
                     s.body.Add(new Vector2D(head.GetX(), 1000));
                     s.body.Add(new Vector2D(head.GetX(), -1000));
@@ -750,8 +744,6 @@ namespace Server
                 //if y point is off the world -
                 else if (head.GetY() <= -1000)
                 {
-                throw new Exception();
-                Console.WriteLine("Snake:" + s.snake + "has body part count before head.GetY() <= -1000 of " + s.body.Count);
                 s.body.Remove(head);
                     s.body.Add(new Vector2D(head.GetX(), -1000));
                     s.body.Add(new Vector2D(head.GetX(), 1000));
@@ -761,13 +753,10 @@ namespace Server
 
             //check for snake teleportation tail
             //if x point is off the world +
-            Console.WriteLine("Snake:" + s.snake + "has body part count before tail.GetX() >= 1000 of " + s.body.Count);
+
             if (tail.GetX() >= 1000)
                 {
-                throw new Exception();
-                Console.WriteLine("Snake:" + s.snake + "has body part count before tail.GetX() >= 1000 of " + s.body.Count);
-
-                s.body.RemoveAt(0);
+                 s.body.RemoveAt(0);
                     s.body.RemoveAt(0);
 
                 }
@@ -775,29 +764,23 @@ namespace Server
 
                 else if (tail.GetX() <= -1000)
                 {
-                throw new Exception();
-                Console.WriteLine("Snake:" + s.snake + "has body part count before tail.GetX() <= -1000 of " + s.body.Count);
                 s.body.RemoveAt(0);
                     s.body.RemoveAt(0);
                 }
                 //if y point is off the world +
                 else if (tail.GetY() >= 1000)
                 {
-                throw new Exception();
-                Console.WriteLine("Snake:" + s.snake + "has body part count before tail.GetY() >= 1000 of " + s.body.Count);
+
                 s.body.RemoveAt(0);
                     s.body.RemoveAt(0);
                 }
                 //if y point is off the world -
                 else if (tail.GetY() <= -1000)
                 {
-                throw new Exception();
-                Console.WriteLine("Snake:" + s.snake + "has body part count before tail.GetY() <= -1000 of " + s.body.Count);
+
                 s.body.RemoveAt(0);
                     s.body.RemoveAt(0);
                 }
-
-            Console.WriteLine("Snake:" + s.snake + "has body part count before head.GetX() >= 1000 of " + s.body.Count);
 
         }
         public void AcceptConnection(SocketState state)
