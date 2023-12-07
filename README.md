@@ -35,12 +35,32 @@ Creates the server-side functionality for the server-based, multiplayer, snake g
 * Once the Snake Game Client Maui program is successfully launched, enter the desired address of the Snake Game server into the server textbox (if playing a local game skip this step and leave it as is)
 * Enter a valid player name of 16 characters or less into the name text box.
 * Press the connect button and the game will begin.
-* To control movement use the WASD controls, to increase score and length collect the green and orange power-ups, and lastly avoid all other players, walls, and your own tail or you will die and your score will be reset.
+* To control movement use the WASD controls, to increase score and length collect the green and orange power-ups, and lastly avoid all other players, 
+  walls, and your own tail or you will die and your score will be reset.
 
 ## Game Mechanics
 
-### Our Working Design Choices
-* Our snakes move correctly when
+### Our Working Design Choices 12/07/2023
+* Our snakes move Correctly at a speed of 6 per frame
+* Collisions between snakes, themselves, other snakes, walls, and powerups work as expected and are done by checking each snake against all other 
+  objects.
+* Respawning of snakes and powerups is done without wall collisions, and for snakes without colliding with other snakes by picking their respawn 
+  points at random, make sure that point does not spawn inside a wall, and snakes are then recursively called by our collision tester and spawner 
+  until that snake finds a point where it would be alive and is then added to the world
+* Our powerups will only spawn once a randomly chosen timer between 0 and 75 frames has been reached, and is capped at a maximum of 20 powerups
+* Server correctly connects and disconnects clients without issue, of up to 70 AIClients, this is done by proper use of two types of locks, one for when the clients list is added or removed from and when frames must be sent to all active clients, with clients dictionary as the key. the other lock is for when clients send directions or their snakes need to be marked as DCed, which is locked using the world as the key.
+* Server correctly locks all world objects that may be accessed by multiple threads, using the world as the key.
+* frame rate is maintained at about 30 frames per second for AIClients of <10 and can maintain frame rates of >27 frames per second for up to 60 
+  AIClients.
+* All 7 of the settings and all of the walls held within our settings files are properly read into the server before clients are accepted
+* All handshakes are correctly performed by using three subsequent onNetworkActions, which creates a new snake and marks it with joined so that the 
+  the update can properly find a spawn point using the name and ID sent by the client, sends the world size and ID to the client, and then sends all 
+  the walls, and finally the client is added to the dictionary so that they receive frames.
+* We created several methods for the different game modes that will automatically update through delegates when a different game mode is chosen.
+* The Invincibility PowerUp and score counter works exactly as we hoped for.
+* Except for the issue mentioned below our snake teleporter does work without shortening the snake or killing the snake even when snakes double back 
+  and forth through the teleporter.
+  
 
 ### Our Design Choices That Do Not Work Correctly
 * Snakes can spawn on powerups and vice versa; we attempted to remedy this by adding a second check method but it would have required mass changes to 
