@@ -1,6 +1,4 @@
-# Project Title
-
-Snake Game Server - PS9
+# Snake Game Server - PS9
 
 ## Description 12/07/2023
 
