@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Microsoft.VisualBasic;
 using NetworkUtil;
 using SnakeGame;
 using World;
@@ -216,11 +217,13 @@ namespace Server
             }
            
             Networking.StartServer(AcceptConnection, 11000);
-
+            int update = 0;
+            Stopwatch watch1 = new Stopwatch();
+            watch1.Start();
             Console.WriteLine("Server is running");
             while (true)
             {
-
+                
                 Stopwatch watch = new Stopwatch();
                 watch.Start();
                 while (watch.ElapsedMilliseconds < time)
@@ -228,9 +231,15 @@ namespace Server
 
                 }
                 watch.Restart();
+                update++;
                 //update the world
                 lock (world) { Update(); }
-
+                if (watch1.ElapsedMilliseconds >= 1000)
+                {
+                    Console.WriteLine("FPS " + update);
+                    update = 0;
+                    watch1.Restart();
+                }
                 //send the update
 
 
