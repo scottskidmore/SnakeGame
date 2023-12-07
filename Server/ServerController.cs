@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.PortableExecutable;
 using System.Runtime.Serialization;
 using System.Text.Json;
@@ -16,18 +17,21 @@ using World;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Server
+    
 {
     public class ServerController
     {
+
+        
         private int time;
-        private int respawnRate = 24;
+        private int respawnRate;
         private int snakeSpeed;
         private int worldSize;
-        private int maxPowerups = 20;
+        private int maxPowerups;
         private int nextPowerID;
         private int maxPowerupFrame;
         private int randomPowerupFrame;
-        private int powerupLength=20;
+        private int powerupLength;
         private bool deathMatch;
 
         private World.World world;
@@ -37,6 +41,7 @@ namespace Server
         private delegate void PowerUpEffect(Snake s);
         private SnakeDeath snakeDeath;
         private PowerUpEffect powerUpEffect;
+        private List<int> wallIDs;
 
         /////////////////////////////////////////////////////////////////////////////////////////
         // Code to Start and Maintain Server
@@ -61,10 +66,12 @@ namespace Server
             maxPowerupFrame = 75;
             snakeDeath = new(SnakeNormDeath);
             powerUpEffect = new(PowerUpEffectNorm);
-            
+            wallIDs = new List<int>();
+
             Random rnd = new Random();
 
             randomPowerupFrame = rnd.Next(0, maxPowerupFrame);
+            
 
         }
 
@@ -73,8 +80,9 @@ namespace Server
         /// </summary>
         public void StartServer()
         {
+            string path = Path.GetFullPath("settings.xml");
             // This begins an "event loop"
-            XmlReader reader = XmlNodeReader.Create("settings.xml");
+            XmlReader reader = XmlNodeReader.Create(path);
             reader.ReadToDescendant("GameSettings");
             while (reader.Read())
             {
@@ -104,8 +112,8 @@ namespace Server
                     bool? loadedObjectXml = xmlSerializer.Deserialize(reader.ReadSubtree()) as bool?;
                     if (loadedObjectXml != null)
                     {
-                        bool deathmatch = (bool)loadedObjectXml;
-                        if (deathmatch)
+                           deathMatch = (bool)loadedObjectXml;
+                        if (deathMatch)
                         {
 
                             snakeDeath = new(SnakeMatchDeath);
@@ -113,6 +121,8 @@ namespace Server
                             //invincibility is 5 seconds when framerate is 34 seconds
                             powerupLength = 170;
                             maxPowerups = 5;
+
+
                         }
                        
                         
@@ -179,7 +189,8 @@ namespace Server
                     int? loadedObjectXml = xmlSerializer.Deserialize(reader.ReadSubtree()) as int?;
                     if (loadedObjectXml != null)
                     {
-                        worldSize = (int)loadedObjectXml;
+                        
+                            worldSize = (int)loadedObjectXml;
                     }
                 }
                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "Wall")
@@ -189,6 +200,7 @@ namespace Server
                     if (w != null)
                     {
                         world.Walls.Add(w);
+                        wallIDs.Add(w.wall);
                     }
 
 
@@ -202,6 +214,7 @@ namespace Server
                 world.PowerUps.Add(i, NewPowerUpMaker(i));
                 nextPowerID++;
             }
+           
             Networking.StartServer(AcceptConnection, 11000);
 
             Console.WriteLine("Server is running");
@@ -922,6 +935,8 @@ namespace Server
         // Server Methods and Functions for Different Game Modes
         /////////////////////////////////////////////////////////////////////////////////////////
 
+
+
         /// <summary>
         /// This method updates the snake score and death if a collison occured between two snakes
         /// for the deathmatch game mode
@@ -968,7 +983,7 @@ namespace Server
         {
             //set to grow
             s.growing = true;
-            s.growingFrames = 0;
+            s.growingFrames -= powerupLength;
             //increase score
             s.score++;
         }

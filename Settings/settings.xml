@@ -1,13 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <GameSettings>
-  <GrowthRate>200</GrowthRate>
-  <SnakeSpeed>3</SnakeSpeed>
+  <GrowthRate>20</GrowthRate>
+  <SnakeSpeed>6</SnakeSpeed>
   <MaxPowerUps>100</MaxPowerUps>
   <DeathMatch>false</DeathMatch>
   <MSPerFrame>34</MSPerFrame>
   <RespawnRate>100</RespawnRate>
   <UniverseSize>2000</UniverseSize>
   <Walls>
+    <Wall>
+      <ID>0</ID>
+      <p1>
+        <x>-975</x>
+        <y>-975</y>
+      </p1>
+      <p2>
+        <x>975</x>
+        <y>-975</y>
+      </p2>
+    </Wall>
+    <Wall>
+      <ID>1</ID>
+      <p1>
+        <x>-975</x>
+        <y>-975</y>
+      </p1>
+      <p2>
+        <x>-975</x>
+        <y>975</y>
+      </p2>
+    </Wall>
+    <Wall>
+      <ID>2</ID>
+      <p1>
+        <x>975</x>
+        <y>975</y>
+      </p1>
+      <p2>
+        <x>975</x>
+        <y>-975</y>
+      </p2>
+    </Wall>
+    <Wall>
+      <ID>3</ID>
+      <p1>
+        <x>975</x>
+        <y>975</y>
+      </p1>
+      <p2>
+        <x>-975</x>
+        <y>975</y>
+      </p2>
+    </Wall>
+    <Wall>
+      <ID>4</ID>
+      <p1>
+        <x>-425</x>
+        <y>-425</y>
+      </p1>
+      <p2>
+        <x>-275</x>
+        <y>-425</y>
+      </p2>
+    </Wall>
     <Wall>
       <ID>5</ID>
       <p1>

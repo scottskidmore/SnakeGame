@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,6 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Settingss\**" />
+    <EmbeddedResource Remove="Settingss\**" />
+    <None Remove="Settingss\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NetworkController\NetworkController.csproj" />
@@ -16,5 +22,15 @@
     <Reference Include="NetworkController">
       <HintPath>..\NetworkController\Libraries\NetworkController.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="ServerController.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Settings\settings.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
