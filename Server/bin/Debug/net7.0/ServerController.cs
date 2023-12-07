@@ -415,6 +415,7 @@ namespace Server
             dir.Normalize();
             List<Vector2D> list = new List<Vector2D>() { endPoint, startPoint };
             Snake tempSnake = new Snake(id, name, 0, list, dir, false, true, false, false);
+            //check if snake is valid
             SnakeCollider(tempSnake);
             if (tempSnake.died==true)
                 return NewSnakeMaker(id, name);
@@ -603,7 +604,7 @@ namespace Server
 
                 s.body.Add(new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(-worldSize/2, head.GetY()));
-                s.body.Add(new Vector2D(-worldSize / 2, head.GetY()));
+               // s.body.Add(new Vector2D(-worldSize / 2, head.GetY()));
             }
 
             //if x point is off the world -
@@ -612,7 +613,7 @@ namespace Server
             {
                 s.body.Add( new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(worldSize / 2, head.GetY()));
-                s.body.Add(new Vector2D(worldSize / 2, head.GetY()));
+               // s.body.Add(new Vector2D(worldSize / 2, head.GetY()));
             }
             //if y point is off the world +
             else if (head.GetY() >= worldSize / 2)
@@ -620,7 +621,7 @@ namespace Server
                 
                 s.body.Add(new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(head.GetX(), -worldSize / 2));
-                s.body.Add(new Vector2D(head.GetX(), -worldSize / 2));
+              //  s.body.Add(new Vector2D(head.GetX(), -worldSize / 2));
             }
             //if y point is off the world -
             else if (head.GetY() <= -worldSize / 2)
@@ -628,7 +629,7 @@ namespace Server
                 
                 s.body.Add(new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(head.GetX(), worldSize / 2));
-                s.body.Add(new Vector2D(head.GetX(), worldSize / 2));
+             //   s.body.Add(new Vector2D(head.GetX(), worldSize / 2));
                 
             }
 
@@ -1003,6 +1004,7 @@ namespace Server
                 s.growingFrames++;
             return s.growing;
         }
+    
 
         /////////////////////////////////////////////////////////////////////////////////////////
         // Client Acceptance, Recieving, and Removing code

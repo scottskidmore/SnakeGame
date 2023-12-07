@@ -1004,7 +1004,7 @@ namespace Server
                 s.growingFrames++;
             return s.growing;
         }
-        private 
+    
 
         /////////////////////////////////////////////////////////////////////////////////////////
         // Client Acceptance, Recieving, and Removing code
