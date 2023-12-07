@@ -393,6 +393,8 @@ namespace Server
             return newPower;
         }
 
+       
+
         /// <summary>
         /// Creates a new Snake object
         /// </summary>
@@ -616,7 +618,7 @@ namespace Server
 
                 s.body.Add(new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(-worldSize/2, head.GetY()));
-               // s.body.Add(new Vector2D(-worldSize / 2, head.GetY()));
+                s.body.Add(new Vector2D(-worldSize / 2, head.GetY()));
             }
 
             //if x point is off the world -
@@ -625,7 +627,7 @@ namespace Server
             {
                 s.body.Add( new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(worldSize / 2, head.GetY()));
-               // s.body.Add(new Vector2D(worldSize / 2, head.GetY()));
+                s.body.Add(new Vector2D(worldSize / 2, head.GetY()));
             }
             //if y point is off the world +
             else if (head.GetY() >= worldSize / 2)
@@ -633,7 +635,7 @@ namespace Server
                 
                 s.body.Add(new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(head.GetX(), -worldSize / 2));
-              //  s.body.Add(new Vector2D(head.GetX(), -worldSize / 2));
+                s.body.Add(new Vector2D(head.GetX(), -worldSize / 2));
             }
             //if y point is off the world -
             else if (head.GetY() <= -worldSize / 2)
@@ -641,7 +643,7 @@ namespace Server
                 
                 s.body.Add(new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(head.GetX(), worldSize / 2));
-             //   s.body.Add(new Vector2D(head.GetX(), worldSize / 2));
+                s.body.Add(new Vector2D(head.GetX(), worldSize / 2));
                 
             }
 
@@ -984,7 +986,7 @@ namespace Server
         {
             //set to Invincible
             s.invincible = true;
-            s.invincibleFrames = 0;
+            s.invincibleFrames -= powerupLength;
             
         }
 
