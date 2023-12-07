@@ -348,10 +348,13 @@ namespace Server
                    
                     if (!Networking.Send(client.TheSocket, jsonToSend))
                     {
-                        world.Snakes[(int)client.ID].dc = true;
-                        world.Snakes[(int)client.ID].died = true;
-                        world.Snakes[(int)client.ID].alive = false;
-                        disconnectedClients.Add(client.ID);
+                        if (world.Snakes.ContainsKey((int)client.ID))
+                        {
+                            world.Snakes[(int)client.ID].dc = true;
+                            world.Snakes[(int)client.ID].died = true;
+                            world.Snakes[(int)client.ID].alive = false;
+                            disconnectedClients.Add(client.ID);
+                        }
 
                     }
 
