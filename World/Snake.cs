@@ -14,7 +14,7 @@ namespace World
         
         public string name { get; }
         public int score { get; set; }
-        public List<Vector2D> body { get; }
+        public List<Vector2D> body { get; set; }
         public Vector2D dir { get; set; }
         public bool died { get; set; }
         public bool alive { get; set; }

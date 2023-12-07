@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
@@ -587,7 +588,7 @@ namespace Server
             if (head.GetX() >= worldSize / 2)
             {
 
-                s.body[s.body.Count - 1] = new Vector2D(1000, head.GetY());
+                s.body.Add(new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(-worldSize/2, head.GetY()));
                 s.body.Add(new Vector2D(-worldSize / 2, head.GetY()));
             }
@@ -596,36 +597,49 @@ namespace Server
 
             else if (head.GetX() <= -worldSize / 2)
             {
-                s.body[s.body.Count - 1] = new Vector2D(-worldSize / 2, head.GetY());
+                s.body.Add( new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(worldSize / 2, head.GetY()));
                 s.body.Add(new Vector2D(worldSize / 2, head.GetY()));
             }
             //if y point is off the world +
             else if (head.GetY() >= worldSize / 2)
             {
-                s.body.Remove(head);
-                s.body.Add(new Vector2D(head.GetX(), worldSize / 2));
+                
+                s.body.Add(new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(head.GetX(), -worldSize / 2));
                 s.body.Add(new Vector2D(head.GetX(), -worldSize / 2));
             }
             //if y point is off the world -
             else if (head.GetY() <= -worldSize / 2)
             {
-                s.body.Remove(head);
-                s.body.Add(new Vector2D(head.GetX(), -worldSize / 2));
+                
+                s.body.Add(new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(head.GetX(), worldSize / 2));
                 s.body.Add(new Vector2D(head.GetX(), worldSize / 2));
+                
             }
 
 
             //check for snake teleportation tail
             //if x point or y p[oint is outside of world bounds for tail
 
-            if (tail.GetX() >= worldSize / 2 || tail.GetX() <= -worldSize / 2 || tail.GetY() >= worldSize / 2 || tail.GetY() <= -worldSize / 2)
+            if (tail.GetX() >= worldSize / 2 || tail.GetX() <= -worldSize / 2|| tail.GetY() >= worldSize / 2 || tail.GetY() <= -worldSize / 2)
             {
-                s.body.RemoveAt(0);
-                s.body.RemoveAt(0);
+                List <Vector2D> newBody = new List<Vector2D>();
+                foreach (Vector2D part in s.body) 
+                {
 
+                    if (part.Equals( tail))
+                        continue;
+
+                    newBody.Add(part);
+
+
+                }
+                
+                s.body = newBody;
+            
+      
             }
 
             //check for collisions
@@ -1067,9 +1081,12 @@ namespace Server
             {
                 lock (world)
                 {
-                    world.Snakes[(int)state.ID].died = true;
-                    world.Snakes[(int)state.ID].dc = true;
-                    world.Snakes[(int)state.ID].alive = false;
+                    if (world.Snakes.ContainsKey((int)state.ID))
+                    {
+                        world.Snakes[(int)state.ID].died = true;
+                        world.Snakes[(int)state.ID].dc = true;
+                        world.Snakes[(int)state.ID].alive = false;
+                    }
                     
                 }
                 lock (clients)
