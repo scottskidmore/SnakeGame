@@ -411,3 +411,6 @@ ASALocalRun/
 GameController/bin/Debug/net7.0/GameController.dll
 *.dll
 *.dll
+GameController/bin/Debug/net7.0/GameController.dll
+GameController/bin/Debug/net7.0/Vector2D.dll
+GameController/bin/Debug/net7.0/World.dll
