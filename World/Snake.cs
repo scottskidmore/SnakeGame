@@ -25,8 +25,6 @@ namespace World
         [JsonIgnore]
         public int growingFrames { get; set; }
         [JsonIgnore]
-        public int turningFrames { get; set; }
-        [JsonIgnore]
         public int framesDead { get; set; }
         [JsonIgnore]
         public int invincibleFrames { get; set; }
@@ -45,7 +43,6 @@ namespace World
 			this.alive = alive;
 			this.dc = dc;
 			this.join = join;
-            turningFrames = 0;
 
 		}
         

@@ -611,8 +611,7 @@ namespace Server
 
                 Vector2D head = s.body.Last<Vector2D>();
                 Vector2D newHead = new Vector2D(head.GetX() + (headMoveX * snakeSpeed), head.GetY() + (headMoveY * snakeSpeed));
-                //add distance traveled to snake turncheck
-                s.turningFrames += snakeSpeed;
+                
 
 
 
@@ -1052,7 +1051,12 @@ namespace Server
         /////////////////////////////////////////////////////////////////////////////////////////
 
 
-   
+
+        /// <summary>
+        /// This method determines if the snake will turn into itself
+        /// </summary>
+        /// <param name="s">The snake that is trying to turn</param>
+        /// <param name="newPoint">The snake that was collided into</param>
         private bool SnakeTurnCheck(Snake s, Vector2D newPoint)
         {
             if (s.body.Count > 2)
@@ -1103,7 +1107,7 @@ namespace Server
         }
 
         /// <summary>
-        /// This method updates the snake score and death if a collison occured between two snakes
+        /// This method updates the snake score and death if a Collison occurred between two snakes
         /// for the normal game mode
         /// </summary>
         /// <param name="s">The snake that died</param>
@@ -1139,6 +1143,10 @@ namespace Server
             //increase score
             s.score++;
         }
+        /// <summary>
+        /// This method decides when to deactivate powerup
+        /// </summary>
+        /// <param name="s">The snake that consumed the PowerUp</param>
         private bool PowerupTimer(Snake s)
         {
             if (deathMatch)
@@ -1158,7 +1166,7 @@ namespace Server
     
 
         /////////////////////////////////////////////////////////////////////////////////////////
-        // Client Acceptance, Recieving, and Removing code
+        // Client Acceptance, Receiving, and Removing code
         /////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
