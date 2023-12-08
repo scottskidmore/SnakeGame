@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <GameSettings>
-  <GrowthRate>20</GrowthRate>
+  <GrowthRate>24</GrowthRate>
   <SnakeSpeed>6</SnakeSpeed>
-  <MaxPowerUps>24</MaxPowerUps>
+  <MaxPowerUps>20</MaxPowerUps>
   <DeathMatch>false</DeathMatch>
   <MSPerFrame>34</MSPerFrame>
   <RespawnRate>100</RespawnRate>
