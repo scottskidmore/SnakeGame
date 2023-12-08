@@ -449,7 +449,83 @@ namespace Server
                 double x = rnd.Next(-worldSize/2+120, worldSize/2-120);
                 double y = rnd.Next(-worldSize / 2+120, worldSize / 2-120);
                 Vector2D newPoint = new Vector2D(x,y);
+                foreach (PowerUp? powerup in world.PowerUps.Values)
+                {
+                    if (powerup != null)
+                    {
+                        if (y >= powerup.loc.GetY() - 15 && y <= powerup.loc.GetY() + 15)
+                        {
+                            valid = false;
+                            break;
+                        }
+                        if (x >= powerup.loc.GetX() - 15 && x <= powerup.loc.GetX() + 15)
+                        {
+                            valid = false;
+                            break;
+                        }
+                    }
+                }
+                int snakeCollisionRange= 15;
+                foreach (Snake? snake in world.Snakes.Values)
+                {
+                    if (valid == false){
+                        break;
+                    }
+                    if (snake != null && snake.alive&& snake.body.Count>0)
+                    {
+                       
+                        for (int i = 1; i < snake.body.Count; i++)
+                            {
+                               
+                                //if snake body is Verticle
+                                if (snake.body[i - 1].GetX() == snake.body[i].GetX())
+                                {
 
+
+                                    if (snake.body[i - 1].GetY() < snake.body[i].GetY())
+                                    {
+                                        if (y >= snake.body[i - 1].GetY() - snakeCollisionRange && y <= snake.body[i].GetY() + snakeCollisionRange)
+                                            if (x <= snake.body[i - 1].GetX()+snakeCollisionRange && x >= snake.body[i - 1].GetX() - snakeCollisionRange)
+                                            {
+                                            valid = false;
+                                                break;
+                                            }
+                                    }
+                                    else if (snake.body[i - 1].GetY() > snake.body[i].GetY())
+                                        if (y <= snake.body[i - 1].GetY() + snakeCollisionRange && y >= snake.body[i].GetY() - snakeCollisionRange)
+                                            if (x <= snake.body[i - 1].GetX()+snakeCollisionRange && x >= snake.body[i - 1].GetX() - snakeCollisionRange)
+                                            {
+                                            valid = false;
+                                                break;
+                                            }
+                                }
+                                //if snake body is Horizontal
+                                if (snake.body[i - 1].GetY() == snake.body[i].GetY())
+                                {
+                                    if (snake.body[i - 1].GetX() < snake.body[i].GetX())
+                                    {
+                                        if (x >= snake.body[i - 1].GetX() - snakeCollisionRange && x <= snake.body[i].GetX() + snakeCollisionRange)
+                                            if (y <= snake.body[i - 1].GetY() +snakeCollisionRange && y >= snake.body[i - 1].GetY() - snakeCollisionRange)
+                                            {
+                                            valid = false;
+                                                break;
+                                            }
+                                    }
+
+                                    else if (snake.body[i - 1].GetX() > snake.body[i].GetX())
+                                        if (x <= snake.body[i - 1].GetX() + snakeCollisionRange && x >= snake.body[i].GetX() - snakeCollisionRange)
+                                            if (y <= snake.body[i - 1].GetY() +snakeCollisionRange && y >= snake.body[i - 1].GetY() - snakeCollisionRange)
+                                            {
+                                            valid = false;
+                                                break;
+                                            }
+                                }
+                            }
+                        }
+
+                        
+                    }
+                
                 foreach (Wall? wall in world.Walls)
 
                 {
