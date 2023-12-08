@@ -86,7 +86,7 @@ $RECYCLE.BIN/
 
 # Build results
 [Dd]ebug/
-
+!Server/bin/Debug/net7.0/
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
@@ -94,7 +94,7 @@ x64/
 x86/
 bld/
 [Bb]in/
-
+!Server/bin/Debug/net7.0/
 [Oo]bj/
 [Ll]og/
 # Visual Studio 2015/2017 cache/options directory
