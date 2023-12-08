@@ -610,6 +610,8 @@ namespace Server
 
                 Vector2D head = s.body.Last<Vector2D>();
                 Vector2D newHead = new Vector2D(head.GetX() + (headMoveX * snakeSpeed), head.GetY() + (headMoveY * snakeSpeed));
+                //add distance traveled to snake turncheck
+                s.turningFrames += snakeSpeed;
 
 
 
@@ -1027,6 +1029,42 @@ namespace Server
         /////////////////////////////////////////////////////////////////////////////////////////
 
 
+   
+        private bool SnakeTurnCheck(Snake s, Vector2D newPoint)
+        {
+            if (s.body.Count > 2)
+            {
+                newPoint.Normalize();
+                double headMoveX = newPoint.GetX();
+                double headMoveY = newPoint.GetY();
+
+                Vector2D head = s.body.Last<Vector2D>();
+
+                Vector2D lastTurn = new Vector2D(s.body[s.body.Count - 2]);
+                Vector2D headDiff = head-lastTurn;
+                if (Math.Abs(headDiff.GetX()) < 10)
+                {
+                    if (headMoveY < 0 && lastTurn.GetY() > 0)
+                        return false;
+                    else if (headMoveY > 0 && lastTurn.GetY() < 0)
+                        return false;
+                }
+                //currently heading up or down
+                 if (Math.Abs(headDiff.GetY()) < 10)
+                {
+                    //check if the difference has gotten smaller on y axis 
+                    if (headMoveX < 0 && lastTurn.GetX() > 0)
+                        return false;
+                    else if (headMoveX > 0 && lastTurn.GetX() < 0)
+                        return false;
+                    
+                }
+ 
+            }
+            return true;
+            
+        }
+
 
         /// <summary>
         /// This method updates the snake score and death if a collison occured between two snakes
@@ -1237,30 +1275,48 @@ namespace Server
                         {
                             lock (world)
                             {
-                                if (world.Snakes[(int)state.ID].body.Count > 1){
+                                if (world.Snakes[(int)state.ID].body.Count > 1)
+                                {
+
                                     if (p.Contains("up") && world.Snakes[(int)state.ID].dir.GetY() == 0)
                                     {
-                                        world.Snakes[(int)state.ID].dir = new Vector2D(0, -1);
-                                        world.Snakes[(int)state.ID].dir.Normalize();
-                                        world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                                        Vector2D newDir = new Vector2D(0, -1);
+                                        if (SnakeTurnCheck(world.Snakes[(int)state.ID], newDir))
+                                        {
+                                            world.Snakes[(int)state.ID].dir = newDir;
+                                            world.Snakes[(int)state.ID].dir.Normalize();
+                                            world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                                        }
                                     }
                                     else if (p.Contains("down") && world.Snakes[(int)state.ID].dir.GetY() == 0)
                                     {
-                                        world.Snakes[(int)state.ID].dir = new Vector2D(0, 1);
-                                        world.Snakes[(int)state.ID].dir.Normalize();
-                                        world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                                        Vector2D newDir = new Vector2D(0, 1);
+                                        if (SnakeTurnCheck(world.Snakes[(int)state.ID], newDir))
+                                        {
+                                            world.Snakes[(int)state.ID].dir = newDir;
+                                            world.Snakes[(int)state.ID].dir.Normalize();
+                                            world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                                        }
                                     }
                                     else if (p.Contains("right") && world.Snakes[(int)state.ID].dir.GetX() == 0)
                                     {
-                                        world.Snakes[(int)state.ID].dir = new Vector2D(1, 0);
-                                        world.Snakes[(int)state.ID].dir.Normalize();
-                                        world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                                        Vector2D newDir = new Vector2D(1, 0);
+                                        if (SnakeTurnCheck(world.Snakes[(int)state.ID], newDir))
+                                        {
+                                            world.Snakes[(int)state.ID].dir = newDir;
+                                            world.Snakes[(int)state.ID].dir.Normalize();
+                                            world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                                        }
                                     }
                                     else if (p.Contains("left") && world.Snakes[(int)state.ID].dir.GetX() == 0)
                                     {
-                                        world.Snakes[(int)state.ID].dir = new Vector2D(-1, 0);
-                                        world.Snakes[(int)state.ID].dir.Normalize();
-                                        world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                                        Vector2D newDir = new Vector2D(-1, 0);
+                                        if (SnakeTurnCheck(world.Snakes[(int)state.ID], newDir))
+                                        {
+                                            world.Snakes[(int)state.ID].dir = newDir;
+                                            world.Snakes[(int)state.ID].dir.Normalize();
+                                            world.Snakes[(int)state.ID].body.Add(world.Snakes[(int)state.ID].body[world.Snakes[(int)state.ID].body.Count - 1]);
+                                        }
                                     }
                                 }
                             }

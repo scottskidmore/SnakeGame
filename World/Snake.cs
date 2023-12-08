@@ -25,11 +25,14 @@ namespace World
         [JsonIgnore]
         public int growingFrames { get; set; }
         [JsonIgnore]
+        public int turningFrames { get; set; }
+        [JsonIgnore]
         public int framesDead { get; set; }
         [JsonIgnore]
         public int invincibleFrames { get; set; }
         [JsonIgnore]
         public bool invincible { get; set; }
+
         [JsonConstructor]
         public Snake(int snake,string name,int score,List<Vector2D> body,Vector2D dir,bool died, bool alive,bool dc,bool join)
 		{
@@ -42,6 +45,7 @@ namespace World
 			this.alive = alive;
 			this.dc = dc;
 			this.join = join;
+            turningFrames = 0;
 
 		}
         
