@@ -408,3 +408,6 @@ ASALocalRun/
 
 /Server/bin/Debug/net7.0/Server.dll
 /Server/bin/Debug/net7.0/ServerController.cs
+GameController/bin/Debug/net7.0/GameController.dll
+*.dll
+*.dll
