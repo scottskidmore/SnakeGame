@@ -86,7 +86,7 @@ $RECYCLE.BIN/
 
 # Build results
 [Dd]ebug/
-!*.xml
+
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
@@ -94,7 +94,7 @@ x64/
 x86/
 bld/
 [Bb]in/
-!*.xml
+
 [Oo]bj/
 [Ll]og/
 # Visual Studio 2015/2017 cache/options directory
@@ -405,4 +405,16 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 /.gitignore
-
+/Server/bin/Debug/net7.0/debug
+/Server/bin/Debug/net7.0/NetworkController.dll
+/Server/bin/Debug/net7.0/Server.deps.json
+/Server/bin/Debug/net7.0/Server.exe
+/Server/bin/Debug/net7.0/Server.pbd
+/Server/bin/Debug/net7.0/Server.runtimeconfig
+/Server/bin/Debug/net7.0/ServerController.cs
+/Server/bin/Debug/net7.0/Vector2D.dll
+/Server/bin/Debug/net7.0/Vector2D.pdb
+/Server/bin/Debug/net7.0/World.dll
+/Server/bin/Debug/net7.0/World.pdb
+/Server/bin/Debug/net7.0/Server.dll
+/World/bin/Debug/net7.0
