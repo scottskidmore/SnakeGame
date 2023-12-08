@@ -34,6 +34,7 @@ namespace Server
         private int randomPowerupFrame;
         private int powerupLength;
         private bool deathMatch;
+        private bool teleported;
 
         private World.World world;
         // A map of clients that are connected, each with an ID
@@ -693,7 +694,7 @@ namespace Server
             //if x point is off the world +
             if (head.GetX() >= worldSize / 2)
             {
-
+                teleported = true;
                 s.body.Add(new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(-worldSize/2, head.GetY()));
                 s.body.Add(new Vector2D(-worldSize / 2, head.GetY()));
@@ -703,6 +704,7 @@ namespace Server
 
             else if (head.GetX() <= -worldSize / 2)
             {
+                teleported = true;
                 s.body.Add( new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(worldSize / 2, head.GetY()));
                 s.body.Add(new Vector2D(worldSize / 2, head.GetY()));
@@ -710,7 +712,7 @@ namespace Server
             //if y point is off the world +
             else if (head.GetY() >= worldSize / 2)
             {
-                
+                teleported = true;
                 s.body.Add(new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(head.GetX(), -worldSize / 2));
                 s.body.Add(new Vector2D(head.GetX(), -worldSize / 2));
@@ -718,7 +720,7 @@ namespace Server
             //if y point is off the world -
             else if (head.GetY() <= -worldSize / 2)
             {
-                
+                teleported = true;
                 s.body.Add(new Vector2D(head.GetX(), head.GetY()));
                 s.body.Add(new Vector2D(head.GetX(), worldSize / 2));
                 s.body.Add(new Vector2D(head.GetX(), worldSize / 2));
@@ -744,8 +746,12 @@ namespace Server
                 }
                 
                 s.body = newBody;
-            
-      
+
+
+            }
+            else
+            {
+                teleported = false;
             }
 
             //check for collisions
@@ -919,7 +925,11 @@ namespace Server
                             bool checking = false;
                             for (int i = snake.body.Count - 1; i > 0; i--)
                             {
-
+                                if (snake.body[i].GetX()<= -worldSize / 2 || snake.body[i].GetX() >= worldSize / 2|| snake.body[i].GetY() <= -worldSize / 2 || snake.body[i].GetY() >= worldSize / 2)
+                                {
+                                    checking = true;
+                                    continue;
+                                }
                                 if (i <= snake.body.Count - 3 && !checking)
                                 {
                                     Vector2D bToA = snake.body[i] - snake.body[i - 1];
@@ -1011,8 +1021,21 @@ namespace Server
                                                     break;
                                                 }
                                     }
+                                    
 
 
+
+
+                                }
+                                if (head.GetY() <= snake.body[0].GetY() + snakeCollisionRange && head.GetY() >= snake.body[0].GetY() - snakeCollisionRange)
+                                {
+                                    if (head.GetX() <= snake.body[0].GetX() + snakeCollisionRange && head.GetX() >= snake.body[0].GetX() - snakeCollisionRange)
+                                    {
+                                        s.alive = false;
+                                        s.died = true;
+                                        s.score = 0;
+                                        break;
+                                    }
                                 }
 
 
