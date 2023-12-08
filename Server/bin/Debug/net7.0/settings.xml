@@ -2,6 +2,7 @@
 <GameSettings>
   <GrowthRate>24</GrowthRate>
   <SnakeSpeed>6</SnakeSpeed>
+  <SnakeSpeed>6</SnakeSpeed>
   <MaxPowerUps>20</MaxPowerUps>
   <DeathMatch>false</DeathMatch>
   <MSPerFrame>34</MSPerFrame>
