@@ -58,12 +58,11 @@ Creates the server-side functionality for the server-based, multiplayer, snake g
 * The Invincibility PowerUp and score counter works exactly as we hoped for.
 * Except for the issue mentioned below our snake teleporter does work without shortening the snake or killing the snake even when snakes double back 
   and forth through the teleporter.
+* Snakes cannot 180 on themselves if they turn quickly enough as we have only allowed consecutive turns of 180 degrees only if the snake is greater than 2x its width.
+* Snakes cannot spawn on powerups or vice-versa
   
 
-### Our Design Choices That Do Not Work Correctly
-* Snakes can spawn on powerups and vice versa; we attempted to remedy this by adding a second check method but it would have required mass changes to 
-  our code and we did not realize this could happen until the last day.
-* Snakes can 180 on themselves if they turn quickly enough, although they do not die, the same issue as above.
+### Our Design Choices That Do Not Work Correctly 12/07/2023
 * Settings file location, we wanted to be able to call our settings file from a different location other than the default net7.0 without declaring a 
   full file path so that no changes or checks needed to be made before running on a new computer. This did not work even with various file location 
   methods from both Path. and System.
@@ -72,7 +71,7 @@ Creates the server-side functionality for the server-based, multiplayer, snake g
   changes to how the world walls were stored.
   
 
-### New Game Mode: DeathMatch
+### New Game Mode: DeathMatch 12/07/2023
 * There is a game mode that can be accessed by opening up the MAIN settings file, located within the file path given in the installation section, and changing <DeathMatch>false</DeathMatch> to <DeathMatch>true</DeathMatch>. and run the server.
   
 * This game mode COMPLETELY changes the functionality of the server for a brand NEW experience by implementing the following changes:
@@ -85,12 +84,12 @@ Creates the server-side functionality for the server-based, multiplayer, snake g
   deathmatches so that winners can be declared.
 
 
-### Help 11/25/2023
-* More info on the help button at the top of the Snake Client
-* all potential errors and exceptions are handled dynamically through display boxes or errors placed DIRECTLY through the GUI handled by our Network Controller!
+### Help 12/07/2023
+* If there are errors when building the server please check that the settings file is in the correct location.
+* If the server still does not build please either clean or rebuild as there may be unexpected/unwanted files in the net7.0 folder.
 
 
-## Authors 11/25/2023
+## Authors 12/07/2023
 
 
 Scott Skidmore and
