@@ -1,4 +1,9 @@
-﻿using System;
+﻿// Authors: Austin Allen and Scott Skidmore, Fall 2023
+// Server controller for snake game 
+// University of Utah
+
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
