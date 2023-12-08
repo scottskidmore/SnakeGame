@@ -95,16 +95,38 @@ namespace Server
                     int? loadedObjectXml = xmlSerializer.Deserialize(reader.ReadSubtree()) as int?;
                     if (loadedObjectXml != null)
                     {
-                        if (powerupLength == 170)
-                        {
-                        }
-                        else
-                        {
+                       
                             powerupLength = (int)loadedObjectXml;
-                        }
+                        
                         
                     }
                 }
+
+                if (reader.NodeType == XmlNodeType.Element && reader.Name == "SnakeSpeed")
+                {
+                    XmlRootAttribute xRoot = new XmlRootAttribute();
+                    xRoot.ElementName = "SnakeSpeed";
+                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(int), xRoot);
+                    int? loadedObjectXml = xmlSerializer.Deserialize(reader.ReadSubtree()) as int?;
+                    if (loadedObjectXml != null)
+                    {
+                        snakeSpeed = (int)loadedObjectXml;
+
+                    }
+                }
+                if (reader.NodeType == XmlNodeType.Element && reader.Name == "MaxPowerUps")
+                {
+                    XmlRootAttribute xRoot = new XmlRootAttribute();
+                    xRoot.ElementName = "MaxPowerUps";
+                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(int), xRoot);
+                    int? loadedObjectXml = xmlSerializer.Deserialize(reader.ReadSubtree()) as int?;
+                    if (loadedObjectXml != null)
+                    {
+                        maxPowerups = (int)loadedObjectXml;
+
+                    }
+                }
+
                 if (reader.NodeType == XmlNodeType.Element && reader.Name == "DeathMatch")
                 {
                     XmlRootAttribute xRoot = new XmlRootAttribute();
@@ -134,30 +156,8 @@ namespace Server
                         powerUpEffect = new(PowerUpEffectNorm);
                     }
                 }
-                if (reader.NodeType == XmlNodeType.Element && reader.Name == "SnakeSpeed")
-                {
-                    XmlRootAttribute xRoot = new XmlRootAttribute();
-                    xRoot.ElementName = "SnakeSpeed";
-                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(int), xRoot);
-                    int? loadedObjectXml = xmlSerializer.Deserialize(reader.ReadSubtree()) as int?;
-                    if (loadedObjectXml != null)
-                    {
-                        snakeSpeed = (int)loadedObjectXml;
-
-                    }
-                }
-                if (reader.NodeType == XmlNodeType.Element && reader.Name == "MaxPowerUps")
-                {
-                    XmlRootAttribute xRoot = new XmlRootAttribute();
-                    xRoot.ElementName = "MaxPowerUps";
-                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(int), xRoot);
-                    int? loadedObjectXml = xmlSerializer.Deserialize(reader.ReadSubtree()) as int?;
-                    if (loadedObjectXml != null)
-                    {
-                        maxPowerups = (int)loadedObjectXml;
-
-                    }
-                }
+               
+                
                 if (reader.NodeType == XmlNodeType.Element && reader.Name == "RespawnRate")
                 {
                     XmlRootAttribute xRoot = new XmlRootAttribute();
@@ -882,7 +882,7 @@ namespace Server
                                 if (checking)
                                 {
                                     Vector2D diff = snake.body[i] - head;
-                                    //if wall is Verticle
+                                    //if snake is Verticle
                                     if (snake.body[i].GetX() == snake.body[i - 1].GetX())
                                     {
 
@@ -908,7 +908,7 @@ namespace Server
                                                     break;
                                                 }
                                     }
-                                    //if wall is Horizontal
+                                    //if snake is Horizontal
                                     if (snake.body[i].GetY() == snake.body[i - 1].GetY())
                                     {
                                         if (snake.body[i].GetX() < snake.body[i - 1].GetX())
